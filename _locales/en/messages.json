@@ -87,8 +87,41 @@
   "filterHideDuplicates": { "message": "Hide duplicates", "description": "Toggle to hide near-duplicate images." },
   "filterHideDuplicatesSoon": {
     "message": "Perceptual duplicate detection arrives in the next update.",
-    "description": "Explains why the hide-duplicates toggle is disabled in this build."
+    "description": "Deprecated: former disabled-toggle hint. Kept for older locale fallbacks."
   },
+  "filterHideDuplicatesHint": {
+    "message": "Compares images once and hides near-duplicates, keeping the largest of each.",
+    "description": "Hint under the (now active) Hide-duplicates toggle."
+  },
+  "dedupePreparing": {
+    "message": "Preparing $count$ images…",
+    "description": "Dedupe overlay when it starts.",
+    "placeholders": { "count": { "content": "$1", "example": "312" } }
+  },
+  "dedupeFetching": {
+    "message": "Fetching $done$ of $total$…",
+    "description": "Dedupe progress while fetching image bytes.",
+    "placeholders": { "done": { "content": "$1", "example": "40" }, "total": { "content": "$2", "example": "312" } }
+  },
+  "dedupeComparing": {
+    "message": "Comparing $done$ of $total$…",
+    "description": "Dedupe progress while hashing/comparing images.",
+    "placeholders": { "done": { "content": "$1", "example": "40" }, "total": { "content": "$2", "example": "312" } }
+  },
+  "dedupeHidden": {
+    "message": "Hid $count$ duplicate images.",
+    "description": "Dedupe finished, duplicates were hidden.",
+    "placeholders": { "count": { "content": "$1", "example": "18" } }
+  },
+  "dedupeNone": { "message": "No duplicates found.", "description": "Dedupe finished, nothing to hide." },
+  "dedupeNoteHidden": {
+    "message": "$count$ duplicates hidden",
+    "description": "Sidebar note under the toggle after dedupe.",
+    "placeholders": { "count": { "content": "$1", "example": "18" } }
+  },
+  "dedupeNoteNone": { "message": "No duplicates found", "description": "Sidebar note when dedupe found none." },
+  "dedupeLimited": { "message": "Too many images to compare — hid exact duplicates only.", "description": "Dedupe skipped the near-duplicate pass on a very large set." },
+  "dedupeFailed": { "message": "Couldn't check for duplicates.", "description": "Dedupe failed unexpectedly." },
   "filterReset": { "message": "Reset filters", "description": "Clears all filters." },
   "filterShownOfTotal": {
     "message": "$shown$ of $total$ shown",
@@ -125,8 +158,50 @@
     "placeholders": { "size": { "content": "$1", "example": "12.4 MB" } }
   },
   "footerDownloadSelected": { "message": "Download selected", "description": "Downloads all selected images individually." },
-  "footerDownloadZip": { "message": "Download as ZIP", "description": "Downloads the selection as a zip (later milestone)." },
-  "footerZipSoon": { "message": "ZIP download arrives with folder rules in an upcoming update.", "description": "Explains the disabled ZIP button." },
+  "footerDownloadZip": { "message": "Download as ZIP", "description": "Downloads the selection as a single zip archive." },
+  "footerZipSoon": { "message": "ZIP download arrives with folder rules in an upcoming update.", "description": "Deprecated: former disabled-ZIP tooltip. Kept for older locale fallbacks." },
+  "footerZipHint": { "message": "Package the selected images into a single .zip file.", "description": "Tooltip for the Download-as-ZIP button." },
+
+  "zipPackaging": {
+    "message": "Preparing $count$ images…",
+    "description": "Toast/overlay shown when a ZIP starts.",
+    "placeholders": { "count": { "content": "$1", "example": "42" } }
+  },
+  "zipFetching": {
+    "message": "Fetching $done$ of $total$…",
+    "description": "ZIP progress while fetching image bytes.",
+    "placeholders": { "done": { "content": "$1", "example": "12" }, "total": { "content": "$2", "example": "42" } }
+  },
+  "zipCompressing": { "message": "Building the ZIP…", "description": "ZIP progress while assembling the archive." },
+  "zipDone": {
+    "message": "Saved $count$ images as a ZIP.",
+    "description": "ZIP finished, all images included.",
+    "placeholders": { "count": { "content": "$1", "example": "42" } }
+  },
+  "zipDoneSome": {
+    "message": "Zipped $ok$ images; $skipped$ couldn't be fetched.",
+    "description": "ZIP finished but some images could not be fetched.",
+    "placeholders": { "ok": { "content": "$1", "example": "38" }, "skipped": { "content": "$2", "example": "4" } }
+  },
+  "zipNothingFetched": { "message": "Couldn't fetch any of the selected images.", "description": "ZIP aborted: every fetch failed." },
+  "zipTooLarge": {
+    "message": "That selection is over the $limit$ ZIP limit — deselect some and try again.",
+    "description": "ZIP refused: estimated size exceeds the cap.",
+    "placeholders": { "limit": { "content": "$1", "example": "500 MB" } }
+  },
+  "zipBlockedPrompt": {
+    "message": "$count$ images are on servers that block direct access. Grant access to all sites to include them?",
+    "description": "Hybrid permission prompt when some image fetches are CORS-blocked.",
+    "placeholders": { "count": { "content": "$1", "example": "7" } }
+  },
+  "zipGrantBtn": { "message": "Grant access", "description": "Requests the optional all-sites permission to fetch blocked images." },
+  "zipSkipBtn": { "message": "Skip them", "description": "Declines the permission and zips only what was fetched." },
+  "zipFailed": { "message": "Couldn't create the ZIP.", "description": "ZIP failed unexpectedly." },
+  "zipFreeLimit": {
+    "message": "Free ZIPs include up to $limit$ images. Upgrade for unlimited.",
+    "description": "Free-tier ZIP cap (not enforced during beta).",
+    "placeholders": { "limit": { "content": "$1", "example": "50" } }
+  },
 
   "downloadStartingOne": { "message": "Downloading 1 image…", "description": "Toast: single download started." },
   "downloadStartingOther": {

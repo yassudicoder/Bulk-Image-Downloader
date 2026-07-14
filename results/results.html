@@ -75,12 +75,12 @@
       </div>
 
       <div class="bid-dup-block">
-        <label class="bid-checkbox" title="" data-i18n-title="filterHideDuplicatesSoon">
-          <input type="checkbox" id="hideDuplicates" disabled>
+        <label class="bid-checkbox" title="" data-i18n-title="filterHideDuplicatesHint">
+          <input type="checkbox" id="hideDuplicates">
           <span data-i18n="filterHideDuplicates">Hide duplicates</span>
-          <span class="bid-badge bid-badge--muted" data-i18n="commonSoon">Soon</span>
         </label>
-        <p class="bid-hint" data-i18n="filterHideDuplicatesSoon">Perceptual duplicate detection arrives in the next update.</p>
+        <p class="bid-hint" data-i18n="filterHideDuplicatesHint">Compares images and hides near-duplicates.</p>
+        <p id="dupHiddenNote" class="bid-hint bid-dup-note" hidden></p>
       </div>
 
       <div class="bid-sidebar__row">
@@ -134,7 +134,7 @@
     </div>
     <div class="bid-footer__actions">
       <button id="downloadZipBtn" class="bid-btn" disabled data-i18n="footerDownloadZip"
-              title="" data-i18n-title="footerZipSoon">Download as ZIP</button>
+              title="" data-i18n-title="footerZipHint">Download as ZIP</button>
       <button id="downloadBtn" class="bid-btn bid-btn--primary" disabled data-i18n="footerDownloadSelected">Download selected</button>
     </div>
   </footer>
@@ -147,9 +147,12 @@
   <script src="../shared/i18n.js"></script>
   <script src="../shared/entitlements.js"></script>
   <script src="../shared/analytics.js"></script>
+  <script src="../shared/imagebytes.js"></script>
   <script src="filters.js"></script>
   <script src="grid.js"></script>
   <script src="downloads.js"></script>
+  <script src="zip.js"></script>
+  <script src="dedupe.js"></script>
   <script src="results.js"></script>
 </body>
 </html>

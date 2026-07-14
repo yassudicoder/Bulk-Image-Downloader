@@ -23,6 +23,7 @@
     FILTER_APPLIED: 'filter_applied',
     DOWNLOAD_INDIVIDUAL: 'download_individual',
     DOWNLOAD_BATCH: 'download_batch',
+    DEDUPE_RUN: 'dedupe_run',
     OPTIONS_OPENED: 'options_opened',
     ANALYTICS_OPT_IN: 'analytics_opt_in',
     ANALYTICS_OPT_OUT: 'analytics_opt_out',

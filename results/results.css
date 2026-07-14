@@ -47,6 +47,7 @@ body {
 .bid-input-suffix span { position: absolute; right: var(--bid-space-2); color: var(--bid-text-faint); font-size: var(--bid-fs-sm); pointer-events: none; }
 .bid-dup-block { display: flex; flex-direction: column; gap: var(--bid-space-1); }
 .bid-hint { font-size: var(--bid-fs-sm); color: var(--bid-text-faint); margin: 0; }
+.bid-dup-note { color: var(--bid-accent); font-weight: 500; }
 .bid-sidebar__row { display: flex; align-items: center; justify-content: space-between; gap: var(--bid-space-2); }
 .bid-sep { border: none; border-top: 1px solid var(--bid-border); margin: 0; }
 .bid-select-group { display: flex; flex-direction: column; gap: var(--bid-space-2); }
@@ -150,11 +151,14 @@ body {
   max-width: 80vw; display: flex; align-items: center; gap: var(--bid-space-3);
 }
 .bid-toast[hidden] { display: none; }
-.bid-toast__action { color: var(--bid-accent-hover); background: none; border: none; font: inherit; font-weight: 600; cursor: pointer; padding: 0; }
+.bid-toast__action { color: var(--bid-accent-hover); background: none; border: none; font: inherit; font-weight: 600; cursor: pointer; padding: 0; white-space: nowrap; }
+.bid-toast__action--primary { font-weight: 700; }
 
 /* Busy overlay for full-page rescans -------------------------------------- */
 .bid-busy { position: absolute; inset: 0; background: color-mix(in srgb, var(--bid-bg) 70%, transparent); display: flex; align-items: center; justify-content: center; z-index: var(--bid-z-overlay); backdrop-filter: blur(1px); }
 .bid-busy[hidden] { display: none; }
+.bid-busy__box { display: flex; flex-direction: column; align-items: center; gap: var(--bid-space-3); }
+.bid-busy__label { margin: 0; font-size: var(--bid-fs-md); font-weight: 500; color: var(--bid-text); text-align: center; max-width: 60ch; }
 .bid-spinner { width: 28px; height: 28px; border: 3px solid var(--bid-border-strong); border-top-color: var(--bid-accent); border-radius: 50%; animation: bid-spin 0.8s linear infinite; }
 @keyframes bid-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .bid-spinner { animation-duration: 2s; } .bid-cell, .bid-cell__dl { transition: none; } }

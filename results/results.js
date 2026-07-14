@@ -5,7 +5,7 @@
  */
 (function () {
   'use strict';
-  const { STORAGE } = BID.constants;
+  const { STORAGE, DEFAULTS } = BID.constants;
   const { parseImageUrl, estimateBytes, formatBytes, debounce } = BID.util;
   const t = BID.i18n.t;
 
@@ -21,6 +21,7 @@
   const selectedLabel = $('selectedLabel');
   const sizeLabel = $('sizeLabel');
   const downloadBtn = $('downloadBtn');
+  const downloadZipBtn = $('downloadZipBtn');
   const toastEl = $('toast');
   const main = document.querySelector('.bid-main');
 
@@ -28,10 +29,14 @@
   const busy = document.createElement('div');
   busy.className = 'bid-busy';
   busy.hidden = true;
-  busy.innerHTML = '<div class="bid-spinner" role="status" aria-label="' + escapeAttr(t('resultsFullPageRunning')) + '"></div>';
+  busy.innerHTML = '<div class="bid-busy__box"><div class="bid-spinner" role="status"></div><p class="bid-busy__label" aria-live="polite"></p></div>';
+  const busyLabel = busy.querySelector('.bid-busy__label');
   main.appendChild(busy);
 
-  function escapeAttr(s) { return String(s == null ? '' : s).replace(/"/g, '&quot;'); }
+  function setBusy(on, label) {
+    if (label != null) busyLabel.textContent = label;
+    busy.hidden = !on;
+  }
 
   // --- State -----------------------------------------------------------------
   let scanMeta = null;          // stored scan payload (with sourceTabId, scanId)
@@ -42,6 +47,7 @@
   let filtered = [];
   let grid = null;
   let settings = {};
+  let dedupeComputed = false;   // whether _dupGroup tags are current for this candidate set
 
   const SOURCE_LABEL_KEY = {
     img: 'sourceImg', srcset: 'sourceSrcset', picture: 'sourcePicture',
@@ -96,6 +102,7 @@
       });
     });
     byId = new Map(candidates.map((c) => [c.id, c]));
+    dedupeComputed = false;
   }
 
   // --- Header / source -------------------------------------------------------
@@ -132,7 +139,7 @@
       fileType: $('fileType').value,
       domain: $('domain').value,
       nameContains: $('nameContains').value,
-      hideDuplicates: false,
+      hideDuplicates: $('hideDuplicates').checked,
     });
   }
 
@@ -140,6 +147,7 @@
   function applyFilters() {
     readFilterState();
     filtered = BID.filters.apply(candidates, filterState);
+    if (filterState.hideDuplicates && dedupeComputed) filtered = collapseDuplicates(filtered);
     filterCount.textContent = t('filterShownOfTotal', [String(filtered.length), String(candidates.length)]);
     grid.setItems(filtered);
     BID.analytics.capture(BID.analytics.EVENTS.FILTER_APPLIED, { count: filtered.length });
@@ -176,6 +184,7 @@
       selectedLabel.classList.add('bid-muted');
       sizeLabel.textContent = '';
       downloadBtn.disabled = true;
+      downloadZipBtn.disabled = true;
       return;
     }
     selectedLabel.classList.remove('bid-muted');
@@ -184,6 +193,7 @@
     for (const c of selectedCandidates()) { if (c.estBytes) { sum += c.estBytes; known++; } }
     sizeLabel.textContent = known ? t('footerEstSize', formatBytes(sum)) : '';
     downloadBtn.disabled = false;
+    downloadZipBtn.disabled = false;
   }
 
   // --- Grid ------------------------------------------------------------------
@@ -253,10 +263,229 @@
     }
   }
 
+  // --- ZIP download ----------------------------------------------------------
+  let zipping = false;
+
+  async function zipSelected() {
+    const items = selectedCandidates();
+    if (!items.length) { showToast(t('downloadNoneSelected')); return; }
+
+    // Free-tier gate (a no-op while entitlements.BETA_ALL_FREE is on).
+    if (!BID.entitlements.isEnabled(BID.entitlements.FLAGS.bulkZipOver50) &&
+        items.length > DEFAULTS.freeZipLimit) {
+      showToast(t('zipFreeLimit', String(DEFAULTS.freeZipLimit)));
+      return;
+    }
+
+    // Cheap upfront guard: refuse selections whose estimated bytes blow the cap
+    // before we fetch anything.
+    let est = 0;
+    for (const c of items) est += c.estBytes || 0;
+    if (est > DEFAULTS.zipMaxBytes) { showToast(t('zipTooLarge', formatBytes(DEFAULTS.zipMaxBytes))); return; }
+
+    if (zipping) return;
+    zipping = true;
+    downloadZipBtn.disabled = true;
+    try {
+      await runZip(items);
+    } catch (_) {
+      showToast(t('zipFailed'));
+    } finally {
+      zipping = false;
+      setBusy(false);
+      downloadZipBtn.disabled = selection.size === 0;
+    }
+  }
+
+  async function runZip(items) {
+    const onProgress = (d, tot) => setBusy(true, t('zipFetching', [String(d), String(tot)]));
+    setBusy(true, t('zipPackaging', String(items.length)));
+
+    const { ok, errored } = await fetchBytesHybrid(items, onProgress);
+
+    if (!ok.length) { setBusy(false); showToast(t('zipNothingFetched')); return; }
+
+    // Real size guard — the upfront estimate can read 0 when dimensions are unknown.
+    let actual = 0;
+    for (const o of ok) actual += o.bytes.length;
+    if (actual > DEFAULTS.zipMaxBytes) { setBusy(false); showToast(t('zipTooLarge', formatBytes(DEFAULTS.zipMaxBytes))); return; }
+
+    setBusy(true, t('zipCompressing'));
+    const blob = BID.zip.create(buildZipFiles(ok));
+    await saveZipBlob(blob);
+    setBusy(false);
+
+    showToast(errored.length
+      ? t('zipDoneSome', [String(ok.length), String(errored.length)])
+      : t('zipDone', String(ok.length)));
+    BID.analytics.capture(BID.analytics.EVENTS.DOWNLOAD_BATCH, { count: ok.length, zip: true });
+  }
+
+  // Persistent toast with Grant / Skip. The Grant handler calls requestAllUrls()
+  // inside the click so the permission request stays within a user gesture.
+  function promptGrantAccess(blockedCount) {
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (v) => { if (!settled) { settled = true; resolve(v); } };
+      showToast(t('zipBlockedPrompt', String(blockedCount)), {
+        duration: 0,
+        actions: [
+          { label: t('zipGrantBtn'), primary: true, onAction: () => { BID.imageBytes.requestAllUrls().then(finish); } },
+          { label: t('zipSkipBtn'), onAction: () => finish(false) },
+        ],
+      });
+    });
+  }
+
+  function buildZipFiles(okList) {
+    const used = new Set();
+    return okList.map((o, i) => ({ name: uniqueName(BID.downloads.filenameFor(o.item, i), used), data: o.bytes }));
+  }
+
+  // Collision-proof names within the archive: "photo.jpg" -> "photo-1.jpg" -> …
+  function uniqueName(name, used) {
+    if (!used.has(name.toLowerCase())) { used.add(name.toLowerCase()); return name; }
+    const dot = name.lastIndexOf('.');
+    const stem = dot > 0 ? name.slice(0, dot) : name;
+    const ext = dot > 0 ? name.slice(dot) : '';
+    let n = 1, cand;
+    do { cand = stem + '-' + (n++) + ext; } while (used.has(cand.toLowerCase()));
+    used.add(cand.toLowerCase());
+    return cand;
+  }
+
+  function zipFilename() {
+    let host = '';
+    try { host = new URL(scanMeta.pageUrl).hostname.replace(/^www\./, '').replace(/\./g, '-'); } catch (_) { host = ''; }
+    const d = new Date();
+    const stamp = '' + d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate());
+    const base = host ? ('images-' + host + '-' + stamp) : ('images-' + stamp);
+    return BID.downloads.sanitizeFilename(base, 'zip');
+  }
+  const pad2 = (n) => (n < 10 ? '0' + n : '' + n);
+
+  function saveZipBlob(blob) {
+    const url = URL.createObjectURL(blob);
+    const filename = zipFilename();
+    return new Promise((resolve, reject) => {
+      try {
+        chrome.downloads.download({ url, filename, conflictAction: 'uniquify', saveAs: false }, (id) => {
+          const err = chrome.runtime.lastError;
+          // Revoke only after the download has had time to read the blob.
+          setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 60000);
+          if (err || id == null) reject(err || new Error('no_id')); else resolve(id);
+        });
+      } catch (e) { try { URL.revokeObjectURL(url); } catch (_) {} reject(e); }
+    });
+  }
+
+  // Fetch bytes for `items`, running the hybrid-permission flow: try once, and if some
+  // fetches fail while we lack <all_urls>, offer to grant it and retry the failures.
+  // Shared by the ZIP and dedupe features.
+  async function fetchBytesHybrid(items, onProgress) {
+    let { ok, errored } = await BID.imageBytes.fetchAll(items, { onProgress });
+    if (errored.length && !(await BID.imageBytes.hasAllUrls())) {
+      setBusy(false);
+      const granted = await promptGrantAccess(errored.length);
+      if (granted) {
+        const retry = await BID.imageBytes.fetchAll(errored.map((e) => e.item), { onProgress });
+        ok = ok.concat(retry.ok);
+        errored = retry.errored;
+      }
+    }
+    return { ok, errored };
+  }
+
+  // --- Hide duplicates -------------------------------------------------------
+  async function onToggleDedupe() {
+    const cb = $('hideDuplicates');
+    if (cb.checked && !dedupeComputed) {
+      cb.disabled = true;
+      try {
+        const res = await runDedupe();
+        updateDupNote(res);
+        showToast(res.dupCount ? t('dedupeHidden', String(res.dupCount)) : t('dedupeNone'));
+      } catch (_) {
+        showToast(t('dedupeFailed'));
+        cb.checked = false;
+      } finally {
+        cb.disabled = false;
+        setBusy(false);
+      }
+    }
+    applyFilters();
+    updateFooter();
+  }
+
+  async function runDedupe() {
+    for (const c of candidates) { c._dupGroup = null; c._dupBytes = 0; }
+    setBusy(true, t('dedupePreparing', String(candidates.length)));
+
+    const { ok } = await fetchBytesHybrid(candidates,
+      (d, tot) => setBusy(true, t('dedupeFetching', [String(d), String(tot)])));
+    if (!ok.length) { dedupeComputed = true; return { dupCount: 0, groupCount: 0, limited: false }; }
+
+    const hashed = await BID.dedupe.hashAll(ok,
+      { onProgress: (d, tot) => setBusy(true, t('dedupeComparing', [String(d), String(tot)])) });
+    const threshold = clampThreshold(settings.dedupeHammingThreshold);
+    const res = BID.dedupe.markDuplicates(hashed, threshold);
+    dedupeComputed = true;
+    BID.analytics.capture(BID.analytics.EVENTS.DEDUPE_RUN, { count: res.dupCount, total: candidates.length });
+    return res;
+  }
+
+  // Collapse duplicate groups in the visible list: keep the largest member present, drop
+  // the rest. Choosing the representative from what's already visible means a group never
+  // vanishes just because its best copy was excluded by another filter.
+  function collapseDuplicates(list) {
+    const best = new Map(); // group key -> chosen candidate
+    for (const c of list) {
+      if (c._dupGroup == null) continue;
+      const cur = best.get(c._dupGroup);
+      if (!cur || betterRep(c, cur)) best.set(c._dupGroup, c);
+    }
+    const keepIds = new Set();
+    for (const c of best.values()) keepIds.add(c.id);
+    const out = [];
+    for (const c of list) {
+      if (c._dupGroup != null && !keepIds.has(c.id)) continue;
+      out.push(c);
+    }
+    return out;
+  }
+
+  function areaOf(c) { return (c.naturalWidth || c.displayWidth || 0) * (c.naturalHeight || c.displayHeight || 0); }
+  function betterRep(a, b) {
+    const aa = areaOf(a), ba = areaOf(b);
+    if (aa !== ba) return aa > ba;
+    return (a._dupBytes || 0) > (b._dupBytes || 0);
+  }
+
+  function clampThreshold(v) {
+    v = parseInt(v, 10);
+    if (isNaN(v)) v = DEFAULTS.dedupeHammingThreshold;
+    return Math.max(0, Math.min(16, v));
+  }
+
+  function updateDupNote(res) {
+    const note = $('dupHiddenNote');
+    if (!note) return;
+    note.hidden = false;
+    if (res.limited) note.textContent = t('dedupeLimited');
+    else note.textContent = res.dupCount ? t('dedupeNoteHidden', String(res.dupCount)) : t('dedupeNoteNone');
+  }
+
+  function resetDedupeState() {
+    dedupeComputed = false;
+    for (const c of candidates) c._dupGroup = null;
+    const cb = $('hideDuplicates'); if (cb) cb.checked = false;
+    const note = $('dupHiddenNote'); if (note) note.hidden = true;
+  }
+
   // --- Full-page rescan ------------------------------------------------------
   async function rescanFullPage() {
     if (!scanMeta || scanMeta.sourceTabId == null) { showToast(t('rescanFailed')); return; }
-    busy.hidden = false;
+    setBusy(true, t('resultsFullPageRunning'));
     const prevCount = candidates.length;
     const prevSelectedUrls = new Set(selectedCandidates().map((c) => c.url));
     try {
@@ -274,6 +503,7 @@
       // Rebuild facet dropdowns (new domains/types may have appeared).
       resetFacetOptions();
       setupFilterFacets();
+      resetDedupeState();
       render();
 
       const delta = candidates.length - prevCount;
@@ -282,7 +512,7 @@
     } catch (_) {
       showToast(t('rescanFailed'));
     } finally {
-      busy.hidden = true;
+      setBusy(false);
     }
   }
 
@@ -299,14 +529,16 @@
       $(id).addEventListener('change', applyFilters);
     });
     $('nameContains').addEventListener('input', applyFiltersDebounced);
+    $('hideDuplicates').addEventListener('change', onToggleDedupe);
     $('resetFilters').addEventListener('click', () => {
       ['minWidth', 'minHeight', 'nameContains'].forEach((id) => { $(id).value = ''; });
-      $('fileType').value = ''; $('domain').value = '';
+      $('fileType').value = ''; $('domain').value = ''; $('hideDuplicates').checked = false;
       applyFilters();
     });
     $('selectAllBtn').addEventListener('click', selectAllFiltered);
     $('clearSelBtn').addEventListener('click', clearSelection);
     downloadBtn.addEventListener('click', () => downloadItems(selectedCandidates()));
+    downloadZipBtn.addEventListener('click', zipSelected);
 
     const thumb = $('thumbSize');
     thumb.addEventListener('input', () => grid.setThumbSize(parseInt(thumb.value, 10)));
@@ -377,16 +609,21 @@
     const span = document.createElement('span');
     span.textContent = msg;
     toastEl.appendChild(span);
-    if (options.actionLabel) {
+
+    const actions = options.actions
+      || (options.actionLabel ? [{ label: options.actionLabel, onAction: options.onAction }] : []);
+    for (const a of actions) {
       const b = document.createElement('button');
-      b.className = 'bid-toast__action';
-      b.textContent = options.actionLabel;
-      b.addEventListener('click', () => { hideToast(); if (options.onAction) options.onAction(); });
+      b.className = 'bid-toast__action' + (a.primary ? ' bid-toast__action--primary' : '');
+      b.textContent = a.label;
+      b.addEventListener('click', () => { hideToast(); if (a.onAction) a.onAction(); });
       toastEl.appendChild(b);
     }
+
     toastEl.hidden = false;
     if (toastTimer) clearTimeout(toastTimer);
-    const dur = options.duration || 3200;
+    // duration: 0 means persist until dismissed (needed for the grant-access prompt).
+    const dur = options.duration == null ? 3200 : options.duration;
     if (dur) toastTimer = setTimeout(hideToast, dur);
   }
   function hideToast() { toastEl.hidden = true; }
