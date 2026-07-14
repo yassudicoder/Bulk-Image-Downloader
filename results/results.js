@@ -54,6 +54,8 @@
     await BID.analytics._hydrate();
     try { const s = await chrome.storage.local.get(STORAGE.settings); settings = s[STORAGE.settings] || {}; } catch (_) { settings = {}; }
 
+    setupStaticControls();
+
     const scanId = new URLSearchParams(location.search).get('scan');
     if (!scanId) return showError('errorBody');
 
@@ -312,7 +314,12 @@
       settings = Object.assign({}, settings, { thumbSize: parseInt(thumb.value, 10) });
       try { await chrome.storage.local.set({ [STORAGE.settings]: settings }); } catch (_) {}
     });
+  }
 
+  // Controls that must work even when the scan errors out early, so the header /
+  // empty-state buttons and the analytics prompt are never dead. Wired before
+  // boot()'s error returns; must not depend on the grid or scan payload.
+  function setupStaticControls() {
     $('scanFullPageBtn').addEventListener('click', rescanFullPage);
     $('emptyScanFullPage').addEventListener('click', rescanFullPage);
     $('optionsBtn').addEventListener('click', () => { try { chrome.runtime.openOptionsPage(); } catch (_) {} });

@@ -3,6 +3,13 @@
  */
 *, *::before, *::after { box-sizing: border-box; }
 
+/*
+ * The `hidden` attribute must always win. Component rules that set `display`
+ * (e.g. `.bid-state { display: flex }`) otherwise override the UA stylesheet's
+ * `[hidden] { display: none }`, leaving "hidden" elements visible.
+ */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0;
   padding: 0;
