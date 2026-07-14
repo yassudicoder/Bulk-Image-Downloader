@@ -1,0 +1,126 @@
+/*
+ * shared/tokens.css — design tokens. The ONLY place raw colors/spacing/radii live.
+ * Component CSS must reference these custom properties, never hard-coded values.
+ */
+:root {
+  /* Palette — surfaces */
+  --bid-bg: #f7f8fa;
+  --bid-surface: #ffffff;
+  --bid-surface-2: #f0f2f5;
+  --bid-surface-3: #e6e9ee;
+  --bid-border: #d7dbe0;
+  --bid-border-strong: #b9c0c9;
+
+  /* Palette — text */
+  --bid-text: #1a1f26;
+  --bid-text-muted: #5c6672;
+  --bid-text-faint: #8a94a1;
+
+  /* Palette — accent (teal; kept in sync with tools/gen-icons.js) */
+  --bid-accent: #0d9488;
+  --bid-accent-hover: #0f766e;
+  --bid-accent-active: #115e59;
+  --bid-accent-fg: #ffffff;
+  --bid-accent-soft: #d5f0ec;
+
+  /* Palette — semantic */
+  --bid-danger: #dc2626;
+  --bid-danger-soft: #fde2e2;
+  --bid-warn: #b45309;
+  --bid-warn-soft: #fdecc8;
+  --bid-ok: #15803d;
+  --bid-ok-soft: #d9f2e0;
+  --bid-info: #2563eb;
+
+  /* Badges on thumbnails */
+  --bid-badge-bg: rgba(17, 24, 33, 0.78);
+  --bid-badge-fg: #ffffff;
+
+  /* Focus ring */
+  --bid-focus: #2563eb;
+  --bid-focus-ring: 0 0 0 2px var(--bid-surface), 0 0 0 4px var(--bid-focus);
+
+  /* Spacing scale (4px base) */
+  --bid-space-1: 4px;
+  --bid-space-2: 8px;
+  --bid-space-3: 12px;
+  --bid-space-4: 16px;
+  --bid-space-5: 24px;
+  --bid-space-6: 32px;
+  --bid-space-7: 48px;
+
+  /* Radii */
+  --bid-radius-sm: 4px;
+  --bid-radius: 8px;
+  --bid-radius-lg: 12px;
+  --bid-radius-pill: 999px;
+
+  /* Elevation */
+  --bid-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.10);
+  --bid-shadow: 0 4px 12px rgba(16, 24, 40, 0.10), 0 2px 4px rgba(16, 24, 40, 0.06);
+  --bid-shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.16);
+
+  /* Typography */
+  --bid-font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --bid-mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+  --bid-fs-xs: 11px;
+  --bid-fs-sm: 12px;
+  --bid-fs-md: 13px;
+  --bid-fs-lg: 15px;
+  --bid-fs-xl: 18px;
+  --bid-fs-2xl: 24px;
+  --bid-lh: 1.5;
+
+  /* Component metrics */
+  --bid-thumb-size: 150px;   /* grid cell target; overridable at runtime */
+  --bid-header-h: 52px;
+  --bid-footer-h: 52px;
+  --bid-sidebar-w: 248px;
+  --bid-control-h: 32px;
+
+  /* Motion */
+  --bid-transition: 120ms ease;
+  --bid-z-header: 20;
+  --bid-z-overlay: 60;
+  --bid-z-toast: 80;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bid-bg: #0f1216;
+    --bid-surface: #171b21;
+    --bid-surface-2: #1e242c;
+    --bid-surface-3: #262d37;
+    --bid-border: #2c333d;
+    --bid-border-strong: #3a424e;
+
+    --bid-text: #e7ebf0;
+    --bid-text-muted: #9aa4b2;
+    --bid-text-faint: #6b7583;
+
+    --bid-accent: #2dd4bf;
+    --bid-accent-hover: #5eead4;
+    --bid-accent-active: #99f6e4;
+    --bid-accent-fg: #06231f;
+    --bid-accent-soft: #123b37;
+
+    --bid-danger: #f87171;
+    --bid-danger-soft: #3a1d1d;
+    --bid-warn: #fbbf24;
+    --bid-warn-soft: #3a2e12;
+    --bid-ok: #4ade80;
+    --bid-ok-soft: #14351f;
+    --bid-info: #60a5fa;
+
+    --bid-badge-bg: rgba(0, 0, 0, 0.72);
+    --bid-badge-fg: #f2f5f8;
+
+    --bid-focus: #60a5fa;
+
+    --bid-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --bid-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+    --bid-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+  }
+}

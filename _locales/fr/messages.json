@@ -1,0 +1,22 @@
+{
+  "extName": {
+    "message": "Bulk Image Downloader by TheOpenBox",
+    "description": "Brand name — locked, do NOT translate."
+  },
+  "extShortName": {
+    "message": "Bulk Images",
+    "description": "TODO(fr): translate short name."
+  },
+  "extDescription": {
+    "message": "Scan, filter, dedupe, and bulk-download a page's images. Dedupe that works. Sees nothing until you click.",
+    "description": "TODO(fr): translate. Any key missing here falls back to the English (default_locale) message."
+  },
+  "actionTitle": {
+    "message": "Scan images on this page",
+    "description": "TODO(fr): translate toolbar tooltip."
+  },
+  "welcomeSubtitle": {
+    "message": "Find and save the images on any page. It reads nothing until you click.",
+    "description": "TODO(fr): translate the two promises."
+  }
+}

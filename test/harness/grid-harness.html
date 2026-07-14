@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Grid harness</title>
+  <link rel="stylesheet" href="../../shared/tokens.css">
+  <link rel="stylesheet" href="../../shared/base.css">
+  <link rel="stylesheet" href="../../results/results.css">
+  <style>
+    /* Give the grid a fixed viewport so windowing math has real dimensions. */
+    #gridScroll { position: relative; height: 600px; width: 900px; overflow-y: auto; border: 1px solid var(--bid-border); }
+  </style>
+</head>
+<body>
+  <!-- DEV harness (excluded from the shipped build). Verifies grid virtualization. -->
+  <div id="gridScroll" class="bid-scroll" tabindex="0">
+    <div id="gridSizer"></div>
+  </div>
+
+  <script src="../../shared/constants.js"></script>
+  <script src="../../shared/util.js"></script>
+  <script src="../../results/grid.js"></script>
+  <script>
+    // Build N synthetic candidates using tiny inline-SVG data URIs (real intrinsic dims).
+    function makeItems(n) {
+      const out = [];
+      for (let i = 0; i < n; i++) {
+        const w = 80 + (i % 5) * 40, h = 80 + (i % 3) * 30;
+        const svg = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='" + w + "'%20height='" + h + "'%3E%3Crect%20width='100%25'%20height='100%25'%20fill='%230d9488'/%3E%3C/svg%3E";
+        out.push({
+          id: 'c' + i, url: svg, sourceType: ['img', 'srcset', 'background', 'lazy', 'shadow'][i % 5],
+          naturalWidth: w, naturalHeight: h, displayWidth: 0, displayHeight: 0,
+          alt: 'item ' + i, domIndex: i, filename: 'img-' + i + '.svg', ext: 'svg', pageUrl: 'about:test',
+        });
+      }
+      return out;
+    }
+
+    const selection = new Set();
+    window.__gridSelection = selection;
+    window.__grid = BID.createGrid({
+      scrollEl: document.getElementById('gridScroll'),
+      sizerEl: document.getElementById('gridSizer'),
+      thumbSize: 150,
+      strings: { select: 'Select', open: 'Open', download: 'Download', sizeUnknown: '—', broken: 'broken' },
+      sourceLabel: (s) => s.toUpperCase(),
+      isSelected: (id) => selection.has(id),
+      onToggle: (id) => { if (selection.has(id)) selection.delete(id); else selection.add(id); window.__grid.refreshSelection(); },
+      onDownload: () => {},
+      onOpen: () => {},
+    });
+    window.__setItems = (n) => window.__grid.setItems(makeItems(n));
+    window.__renderedCount = () => document.querySelectorAll('#gridSizer .bid-cell').length;
+    window.__setItems(1000);
+  </script>
+</body>
+</html>

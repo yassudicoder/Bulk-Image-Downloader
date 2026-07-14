@@ -1,0 +1,135 @@
+/* welcome/welcome.css — first-run page. Tokens only. */
+body { padding: var(--bid-space-7) var(--bid-space-5); }
+
+.bid-welcome {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--bid-space-7);
+}
+
+/* Hero ------------------------------------------------------------------- */
+.bid-hero {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bid-space-3);
+}
+.bid-hero__icon {
+  border-radius: var(--bid-radius-lg);
+  box-shadow: var(--bid-shadow), 0 0 0 6px var(--bid-accent-soft);
+  margin-bottom: var(--bid-space-2);
+}
+.bid-hero h1 { font-size: var(--bid-fs-2xl); letter-spacing: -0.01em; }
+.bid-hero__tagline {
+  font-size: var(--bid-fs-xl);
+  color: var(--bid-text-muted);
+  max-width: 46ch;
+  line-height: 1.4;
+}
+
+/* Section label ---------------------------------------------------------- */
+.bid-section-label {
+  font-size: var(--bid-fs-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bid-text-faint);
+  margin-bottom: var(--bid-space-4);
+}
+
+/* Steps ------------------------------------------------------------------ */
+.bid-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--bid-space-4);
+}
+.bid-step {
+  background: var(--bid-surface);
+  border: 1px solid var(--bid-border);
+  border-radius: var(--bid-radius-lg);
+  padding: var(--bid-space-5) var(--bid-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--bid-space-3);
+  transition: border-color var(--bid-transition),
+              transform var(--bid-transition),
+              box-shadow var(--bid-transition);
+}
+.bid-step:hover {
+  border-color: var(--bid-border-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--bid-shadow-sm);
+}
+.bid-step__num {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--bid-radius-pill);
+  background: var(--bid-accent-soft);
+  color: var(--bid-accent);
+  font-weight: 700;
+  font-size: var(--bid-fs-lg);
+  font-variant-numeric: tabular-nums;
+}
+.bid-step h3 { font-size: var(--bid-fs-lg); }
+.bid-step p { font-size: var(--bid-fs-sm); color: var(--bid-text-muted); }
+
+/* Permission promise — the trust anchor ---------------------------------- */
+.bid-promise {
+  display: flex;
+  gap: var(--bid-space-4);
+  align-items: flex-start;
+  background: var(--bid-accent-soft);
+  border: 1px solid var(--bid-accent);
+  border-radius: var(--bid-radius-lg);
+  padding: var(--bid-space-5);
+}
+.bid-promise__badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--bid-radius-pill);
+  background: var(--bid-surface);
+  color: var(--bid-accent);
+  box-shadow: var(--bid-shadow-sm);
+}
+.bid-promise__badge svg { width: 24px; height: 24px; display: block; }
+.bid-promise__content { display: flex; flex-direction: column; gap: var(--bid-space-2); }
+.bid-promise h2 { font-size: var(--bid-fs-xl); }
+.bid-promise p { color: var(--bid-text); opacity: 0.88; }
+
+/* Analytics ask ---------------------------------------------------------- */
+.bid-analytics {
+  background: var(--bid-surface);
+  border: 1px solid var(--bid-border);
+  border-radius: var(--bid-radius-lg);
+  padding: var(--bid-space-5);
+}
+.bid-analytics h2 { font-size: var(--bid-fs-lg); margin-bottom: var(--bid-space-2); }
+.bid-analytics__actions { display: flex; gap: var(--bid-space-2); margin-top: var(--bid-space-4); }
+.bid-analytics__ack { margin-top: var(--bid-space-3); color: var(--bid-ok); font-weight: 500; }
+
+/* Footer ----------------------------------------------------------------- */
+.bid-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bid-space-4);
+  flex-wrap: wrap;
+  padding-top: var(--bid-space-5);
+  border-top: 1px solid var(--bid-border);
+}
+.bid-footer p { flex: 1 1 260px; }
+
+@media (max-width: 640px) {
+  .bid-steps { grid-template-columns: 1fr; }
+}

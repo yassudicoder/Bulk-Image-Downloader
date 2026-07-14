@@ -1,0 +1,20 @@
+# Dependencies (none — vendored libs are committed under vendor/)
+node_modules/
+
+# Build output
+dist/
+*.zip
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# Local scratch
+tmp/
+.env
+
+# Playwright MCP scratch
+.playwright-mcp/

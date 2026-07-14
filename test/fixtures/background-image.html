@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSS background-image — Bulk Image Downloader fixture</title>
+<!--
+  ============================================================================
+  FIXTURE: background-image.html
+  PURPOSE: Images that exist ONLY as CSS background-image: url(...) (no <img>).
+           Delivered via inline style attributes AND via a <style> block/class,
+           so the scanner must read computed styles.
+
+  ELEMENTS (15 total) and how they contribute -> sourceType: background:
+    - 10 <div> with a single url() via INLINE style          -> 10 url images
+    -  2 <section> with a single url() via CSS CLASS          ->  2 url images
+    -  1 <div> with MULTIPLE backgrounds (two url()s)         ->  2 url images
+    -  1 <div> with a GRADIENT only (no url())  -> IGNORED    ->  0 url images
+    -  1 <section> with GRADIENT + url() via class            ->  1 url image
+                                                     (gradient part is ignored)
+      ----------------------------------------------------------------------
+      EXPECTED BACKGROUND CANDIDATES: 10 + 2 + 2 + 0 + 1 = 15
+
+  Only real url() images count. linear-gradient()/radial-gradient() are NOT
+  images and must be skipped. All url()s are inline-SVG data: URIs (fully
+  percent-encoded: '#' -> %23, '%' -> %25, no literal spaces/quotes).
+  ============================================================================
+-->
+<style>
+  body { font-family: system-ui, sans-serif; margin: 24px; }
+  h1 { margin-bottom: 4px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+  .tile { width: 220px; height: 150px; border: 1px solid #bbb; border-radius: 6px;
+          background-size: cover; background-position: center; color: #fff;
+          font: 12px/1.3 system-ui, sans-serif; padding: 6px; box-sizing: border-box;
+          text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+
+  /* Class-based single url() backgrounds (2 real images). */
+  .bg-class-a { background-image: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22300%22%20height=%22200%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%23c92a2a%22/%3E%3C/svg%3E"); }
+  .bg-class-b { background-image: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22350%22%20height=%22260%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%232a7d6b%22/%3E%3C/svg%3E"); }
+
+  /* Gradient FIRST, then one real url() image (only the url() counts = 1). */
+  .bg-grad-url { background-image:
+      linear-gradient(135deg, rgba(0,0,0,.4), rgba(0,0,0,0)),
+      url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22420%22%20height=%22280%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%23e8590c%22/%3E%3C/svg%3E"); }
+</style>
+</head>
+<body>
+  <h1>CSS <code>background-image</code> discovery</h1>
+  <p>15 elements → 15 real <code>url()</code> background images. The gradient-only
+     tile contributes 0.</p>
+
+  <div class="grid">
+    <!-- 10 inline-style single url() backgrounds -->
+    <div class="tile" style="background-image: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22300%22%20height=%22200%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%23e6194b%22/%3E%3C/svg%3E');">inline 1</div>
+    <div class="tile" style="background-image: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22320%22%20height=%22240%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%233cb44b%22/%3E%3C/svg%3E');">inline 2</div>
+    <div class="tile" style="background-image: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22400%22%20height=%22300%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%234363d8%22/%3E%3C/svg%3E');">inline 3</div>
+    <div class="tile" style="background-image: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22200%22%20height=%22200%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%23f58231%22/%3E%3C/svg%3E');">inline 4</div>
+    <div class="tile" style="background-image: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22500%22%20height=%22300%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%23911eb4%22/%3E%3C/svg%3E');">inline 5</div>
+    <div class="tile" style="background-image: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22640%22%20height=%22360%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%23008080%22/%3E%3C/svg%3E');">inline 6</div>
+    <div class="tile" style="background-image: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22250%22%20height=%22250%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%239a6324%22/%3E%3C/svg%3E');">inline 7</div>
+    <div class="tile" style="background-image: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22300%22%20height=%22300%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%23800000%22/%3E%3C/svg%3E');">inline 8</div>
+    <div class="tile" style="background-image: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22360%22%20height=%22240%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%231971c2%22/%3E%3C/svg%3E');">inline 9</div>
+    <div class="tile" style="background-image: url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22480%22%20height=%22320%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%235f3dc4%22/%3E%3C/svg%3E');">inline 10</div>
+
+    <!-- 2 class-based single url() backgrounds -->
+    <section class="tile bg-class-a">class A</section>
+    <section class="tile bg-class-b">class B</section>
+
+    <!-- 1 element with MULTIPLE url() backgrounds (2 real images) -->
+    <div class="tile" style="background-image:
+        url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22280%22%20height=%22180%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%23b5651d%22/%3E%3C/svg%3E'),
+        url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22280%22%20height=%22180%22%3E%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%23343a40%22/%3E%3C/svg%3E');
+        background-blend-mode: multiply;">multi (2 urls)</div>
+
+    <!-- 1 GRADIENT-ONLY element — no url(), must be IGNORED (0 images) -->
+    <div class="tile" style="background-image: linear-gradient(135deg, #ff6b6b, #4dabf7);">gradient only (ignored)</div>
+
+    <!-- 1 GRADIENT + url() via class (gradient ignored, 1 real image) -->
+    <section class="tile bg-grad-url">gradient + url</section>
+  </div>
+</body>
+</html>

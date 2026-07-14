@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CORS / CDN note — Bulk Image Downloader fixture</title>
+<!--
+  ============================================================================
+  FIXTURE: cors-note.html
+  PURPOSE: Exercise URL / domain parsing and (in M2) the CORS-degrade path.
+
+  CONTENTS & EXPECTED CANDIDATES (4 total):
+    - 2 cross-origin CDN <img> pointing at https://images.example-cdn.com/...
+        These 404 offline (broken, naturalWidth 0). They exist so the scanner
+        parses absolute URLs, extracts the remote host, and (in Milestone 2)
+        walks the CORS-degrade / fetch-fallback path.   -> sourceType: img
+    - 2 local inline-SVG data: URIs that render fully offline with real
+        naturalWidth/Height.                             -> sourceType: img
+      ----------------------------------------------------------------------
+      EXPECTED: 4 candidates (2 remote/broken + 2 local/data-URI)
+
+  Kept intentionally minimal.
+  ============================================================================
+-->
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 32px auto;
+         padding: 0 16px; line-height: 1.5; }
+  .note { background: #fff3cd; border: 1px solid #ffe28a; border-radius: 6px;
+          padding: 12px 14px; color: #665100; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+  .row figure { margin: 0; }
+  .row img { width: 200px; height: 140px; object-fit: cover; border: 1px solid #ccc; background: #eee; display: block; }
+  figcaption { font-size: 12px; color: #666; margin-top: 4px; word-break: break-all; }
+  code { background: #f2f2f2; padding: 1px 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+  <h1>Cross-origin CDN vs. local data URIs</h1>
+
+  <p class="note">
+    <strong>Note:</strong> The two <code>images.example-cdn.com</code> URLs below
+    are cross-origin and will <strong>404 / fail to load offline</strong> (broken
+    images). They are here on purpose — to exercise the scanner's URL &amp; domain
+    parsing and the Milestone-2 CORS-degrade path. The two local
+    <code>data:</code> images always render offline.
+  </p>
+
+  <div class="row">
+    <figure>
+      <!-- Remote CDN #1 — broken offline; for URL/host parsing + CORS path -->
+      <img src="https://images.example-cdn.com/photos/photo1.jpg" width="200" height="140" alt="Remote CDN photo 1 (404 offline)">
+      <figcaption>https://images.example-cdn.com/photos/photo1.jpg</figcaption>
+    </figure>
+    <figure>
+      <!-- Remote CDN #2 — broken offline; note query string + subpath -->
+      <img src="https://images.example-cdn.com/assets/photo2.png?w=800&amp;q=80" width="200" height="140" alt="Remote CDN photo 2 (404 offline)">
+      <figcaption>https://images.example-cdn.com/assets/photo2.png?w=800&amp;q=80</figcaption>
+    </figure>
+    <figure id="local-1"><figcaption>local data: URI #1 (renders offline)</figcaption></figure>
+    <figure id="local-2"><figcaption>local data: URI #2 (renders offline)</figcaption></figure>
+  </div>
+
+  <script>
+  (function () {
+    "use strict";
+    function svgURI(w, h, hex, label) {
+      var fs = Math.max(12, Math.round(Math.min(w, h) / 7));
+      var svg =
+        "%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22" + w + "%22%20height=%22" + h + "%22%3E" +
+        "%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%23" + hex + "%22/%3E" +
+        "%3Ctext%20x=%2250%25%22%20y=%2250%25%22%20font-family=%22sans-serif%22%20font-size=%22" + fs +
+        "%22%20fill=%22%23ffffff%22%20text-anchor=%22middle%22%20dominant-baseline=%22middle%22%3E" +
+        encodeURIComponent(label) +
+        "%3C/text%3E%3C/svg%3E";
+      return "data:image/svg+xml," + svg;
+    }
+    function place(figId, w, h, hex, label) {
+      var img = document.createElement("img");
+      img.src = svgURI(w, h, hex, label);
+      img.alt = label;
+      var fig = document.getElementById(figId);
+      fig.insertBefore(img, fig.firstChild);
+    }
+    place("local-1", 400, 280, "2f9e44", "local-1.svg");
+    place("local-2", 320, 320, "1971c2", "local-2.svg");
+  })();
+  </script>
+</body>
+</html>

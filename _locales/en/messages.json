@@ -1,0 +1,244 @@
+{
+  "extName": {
+    "message": "Bulk Image Downloader by TheOpenBox",
+    "description": "Extension name (locked). Shown in the toolbar and Chrome Web Store."
+  },
+  "extShortName": {
+    "message": "Bulk Images",
+    "description": "Short name shown where space is limited."
+  },
+  "extDescription": {
+    "message": "Scan, filter, dedupe, and bulk-download a page's images. Dedupe that works. Sees nothing until you click.",
+    "description": "Store/manifest description. Leads with the two headline promises. Keep under 132 chars."
+  },
+  "actionTitle": {
+    "message": "Scan images on this page",
+    "description": "Toolbar button tooltip."
+  },
+
+  "commonCancel": { "message": "Cancel", "description": "Generic cancel button." },
+  "commonClose": { "message": "Close", "description": "Generic close button." },
+  "commonRetry": { "message": "Retry", "description": "Generic retry button." },
+  "commonClear": { "message": "Clear", "description": "Generic clear button." },
+  "commonSave": { "message": "Save", "description": "Generic save button." },
+  "commonSaved": { "message": "Saved", "description": "Confirmation that settings saved." },
+  "commonEnable": { "message": "Enable", "description": "Generic enable button." },
+  "commonLearnMore": { "message": "Learn more", "description": "Generic learn-more link." },
+  "commonBeta": { "message": "Beta", "description": "Beta badge." },
+  "commonPro": { "message": "Pro", "description": "Pro badge." },
+  "commonSoon": { "message": "Soon", "description": "Badge for not-yet-shipped features." },
+  "commonSettings": { "message": "Settings", "description": "Settings link/button." },
+  "commonBack": { "message": "Back", "description": "Back button." },
+  "commonLoading": { "message": "Loading…", "description": "Generic loading state." },
+
+  "resultsDocTitle": {
+    "message": "Results · Bulk Image Downloader",
+    "description": "Results page browser tab title."
+  },
+  "resultsHeaderTitle": {
+    "message": "Bulk Image Downloader",
+    "description": "App title in the results header."
+  },
+  "resultsScanning": { "message": "Scanning…", "description": "Shown while a scan is in progress." },
+  "resultsFoundOne": {
+    "message": "1 image",
+    "description": "Header count, singular."
+  },
+  "resultsFoundOther": {
+    "message": "$count$ images",
+    "description": "Header count, plural.",
+    "placeholders": { "count": { "content": "$1", "example": "312" } }
+  },
+  "resultsSourceFrom": {
+    "message": "from $source$",
+    "description": "Origin of the scan (domain).",
+    "placeholders": { "source": { "content": "$1", "example": "example.com" } }
+  },
+  "resultsSelectAllVisible": { "message": "Select all filtered", "description": "Selects every image passing current filters." },
+  "resultsDeselectAll": { "message": "Clear selection", "description": "Deselects all images." },
+  "resultsScanFullPage": { "message": "Scan full page", "description": "Button that scrolls the page to load lazy images then re-scans." },
+  "resultsScanFullPageHint": {
+    "message": "Some images may load only as you scroll. This scrolls the page once, then re-scans — and runs only when you click.",
+    "description": "Explains the full-page scan and its consent model."
+  },
+  "resultsFullPageRunning": { "message": "Scanning full page…", "description": "Full-page scan in progress." },
+  "resultsFullPageAdded": {
+    "message": "Full-page scan found $count$ more",
+    "description": "Result of a full-page rescan.",
+    "placeholders": { "count": { "content": "$1", "example": "24" } }
+  },
+  "resultsFullPageNoNew": { "message": "No new images from the full-page scan", "description": "Full-page rescan found nothing new." },
+  "rescanFailed": {
+    "message": "Couldn't re-scan — the original tab may have been closed or navigated away.",
+    "description": "Shown when a full-page rescan can't reach the source tab."
+  },
+  "resultsThumbSize": { "message": "Thumbnail size", "description": "Label for thumbnail size control." },
+
+  "filterTitle": { "message": "Filters", "description": "Filter panel heading." },
+  "filterMinWidth": { "message": "Min width", "description": "Minimum width filter label." },
+  "filterMinHeight": { "message": "Min height", "description": "Minimum height filter label." },
+  "filterDimensionUnit": { "message": "px", "description": "Pixel unit suffix." },
+  "filterFileType": { "message": "File type", "description": "File-type filter label." },
+  "filterAllTypes": { "message": "All types", "description": "Default file-type option." },
+  "filterDomain": { "message": "Source domain", "description": "Domain filter label." },
+  "filterAllDomains": { "message": "All domains", "description": "Default domain option." },
+  "filterNameContains": { "message": "Name contains", "description": "Filename substring filter label." },
+  "filterNamePlaceholder": { "message": "e.g. product, hero, logo", "description": "Placeholder for the name filter." },
+  "filterHideDuplicates": { "message": "Hide duplicates", "description": "Toggle to hide near-duplicate images." },
+  "filterHideDuplicatesSoon": {
+    "message": "Perceptual duplicate detection arrives in the next update.",
+    "description": "Explains why the hide-duplicates toggle is disabled in this build."
+  },
+  "filterReset": { "message": "Reset filters", "description": "Clears all filters." },
+  "filterShownOfTotal": {
+    "message": "$shown$ of $total$ shown",
+    "description": "How many candidates pass the filters.",
+    "placeholders": {
+      "shown": { "content": "$1", "example": "120" },
+      "total": { "content": "$2", "example": "312" }
+    }
+  },
+
+  "gridDownloadThis": { "message": "Download", "description": "Per-image download button." },
+  "gridOpenOriginal": { "message": "Open original", "description": "Open the full-size image in a new tab." },
+  "gridSelectImage": { "message": "Select image", "description": "Accessible label for the per-image checkbox." },
+  "gridSizeUnknown": { "message": "size unknown", "description": "Shown when image dimensions are not known." },
+  "gridBrokenImage": { "message": "Preview unavailable", "description": "Thumbnail failed to load." },
+
+  "sourceImg": { "message": "IMG", "description": "Badge: standard <img> source." },
+  "sourceSrcset": { "message": "SRCSET", "description": "Badge: chosen from srcset." },
+  "sourcePicture": { "message": "PICTURE", "description": "Badge: from a <picture> element." },
+  "sourceBackground": { "message": "CSS", "description": "Badge: CSS background-image." },
+  "sourceLazy": { "message": "LAZY", "description": "Badge: lazy-load attribute." },
+  "sourceShadow": { "message": "SHADOW", "description": "Badge: inside an open shadow root." },
+
+  "footerSelectedOne": { "message": "1 selected", "description": "Footer selection count, singular." },
+  "footerSelectedOther": {
+    "message": "$count$ selected",
+    "description": "Footer selection count, plural.",
+    "placeholders": { "count": { "content": "$1", "example": "42" } }
+  },
+  "footerNothingSelected": { "message": "Select images to download", "description": "Footer hint when nothing is selected." },
+  "footerEstSize": {
+    "message": "~$size$ est.",
+    "description": "Approximate total size of the selection.",
+    "placeholders": { "size": { "content": "$1", "example": "12.4 MB" } }
+  },
+  "footerDownloadSelected": { "message": "Download selected", "description": "Downloads all selected images individually." },
+  "footerDownloadZip": { "message": "Download as ZIP", "description": "Downloads the selection as a zip (later milestone)." },
+  "footerZipSoon": { "message": "ZIP download arrives with folder rules in an upcoming update.", "description": "Explains the disabled ZIP button." },
+
+  "downloadStartingOne": { "message": "Downloading 1 image…", "description": "Toast: single download started." },
+  "downloadStartingOther": {
+    "message": "Downloading $count$ images…",
+    "description": "Toast: batch download started.",
+    "placeholders": { "count": { "content": "$1", "example": "42" } }
+  },
+  "downloadQueued": {
+    "message": "$done$ of $total$ started",
+    "description": "Progress while queuing downloads.",
+    "placeholders": {
+      "done": { "content": "$1", "example": "10" },
+      "total": { "content": "$2", "example": "42" }
+    }
+  },
+  "downloadDone": {
+    "message": "Started $count$ download(s)",
+    "description": "Toast: downloads dispatched.",
+    "placeholders": { "count": { "content": "$1", "example": "42" } }
+  },
+  "downloadFailedSome": {
+    "message": "$failed$ of $total$ couldn't be downloaded",
+    "description": "Some downloads failed.",
+    "placeholders": {
+      "failed": { "content": "$1", "example": "3" },
+      "total": { "content": "$2", "example": "42" }
+    }
+  },
+  "downloadRetryFailed": { "message": "Retry failed", "description": "Retry only the downloads that failed." },
+  "downloadNoneSelected": { "message": "No images selected", "description": "Attempted download with an empty selection." },
+
+  "emptyTitle": { "message": "No images found on this page", "description": "Empty-state heading." },
+  "emptyBody": {
+    "message": "The scanner didn't see any images here. Some sites load images only as you scroll — try scanning the full page.",
+    "description": "Empty-state body."
+  },
+  "emptyScanFullPage": { "message": "Scan full page", "description": "Empty-state full-page scan button." },
+  "errorTitle": { "message": "Couldn't scan this page", "description": "Scan-error heading." },
+  "errorBody": {
+    "message": "This may be a browser page (like chrome:// or the Web Store) that extensions aren't allowed to read, or the page blocked the scan.",
+    "description": "Scan-error body."
+  },
+  "errorRestricted": {
+    "message": "This page can't be scanned. Browser pages and the Chrome Web Store are off-limits to all extensions.",
+    "description": "Shown when the active tab is a restricted URL."
+  },
+
+  "analyticsPromptTitle": { "message": "Help improve Bulk Image Downloader?", "description": "One-time analytics opt-in prompt heading." },
+  "analyticsPromptBody": {
+    "message": "May we collect anonymous, content-free usage stats — counts and feature names only, never URLs, filenames, or image data? It's off unless you say yes, and you can change it anytime in Settings.",
+    "description": "Analytics opt-in explanation. Must match the options copy and privacy page."
+  },
+  "analyticsPromptYes": { "message": "Allow", "description": "Opt in to analytics." },
+  "analyticsPromptNo": { "message": "No thanks", "description": "Decline analytics." },
+
+  "optionsDocTitle": { "message": "Options · Bulk Image Downloader", "description": "Options page tab title." },
+  "optionsHeading": { "message": "Settings", "description": "Options page heading." },
+  "optionsDedupeSection": { "message": "Duplicate detection", "description": "Dedupe settings section." },
+  "optionsDedupeThreshold": { "message": "Near-duplicate sensitivity", "description": "Dedupe threshold label." },
+  "optionsDedupeThresholdHint": {
+    "message": "How similar two images must be to count as duplicates. Lower is stricter. Takes effect once perceptual dedupe ships.",
+    "description": "Dedupe threshold help text."
+  },
+  "optionsDedupeStrict": { "message": "Stricter", "description": "Low end of the dedupe slider." },
+  "optionsDedupeLoose": { "message": "Looser", "description": "High end of the dedupe slider." },
+  "optionsHistorySection": { "message": "Download history", "description": "Cross-session dedupe memory section." },
+  "optionsHistoryHint": {
+    "message": "Remembers images you've downloaded before so you can skip repeats across sessions. Arrives with the dedupe update.",
+    "description": "History section help text."
+  },
+  "optionsClearHistory": { "message": "Clear history", "description": "Clears the cross-session dedupe index." },
+  "optionsExportHistory": { "message": "Export history", "description": "Exports the dedupe index." },
+  "optionsAnalyticsSection": { "message": "Privacy & analytics", "description": "Analytics settings section." },
+  "optionsAnalyticsToggle": { "message": "Send anonymous, content-free usage stats", "description": "Analytics opt-in toggle label." },
+  "optionsAnalyticsHint": {
+    "message": "Off by default. Counts and feature names only — never URLs, filenames, or image data. Opt in to help improve the extension; turn it off anytime.",
+    "description": "Analytics help text. Must match the prompt and privacy page."
+  },
+  "optionsLocaleSection": { "message": "Language", "description": "Locale settings section." },
+  "optionsLocaleAuto": { "message": "Automatic (browser default)", "description": "Default locale option." },
+  "optionsLocaleHint": { "message": "Follows your browser language unless you choose one here.", "description": "Locale help text." },
+  "optionsComingSoon": { "message": "Coming soon", "description": "Badge for options not active yet." },
+  "optionsFolderRulesSection": { "message": "Download folders", "description": "Folder-rules section (later milestone)." },
+  "optionsFolderRulesHint": {
+    "message": "Route images into Downloads subfolders by domain, size, or date. Note: Chrome only allows subfolders inside your Downloads directory. Arrives in an upcoming update.",
+    "description": "Folder-rules help text; states the Chrome subfolder ceiling."
+  },
+
+  "welcomeDocTitle": { "message": "Welcome · Bulk Image Downloader", "description": "Welcome page tab title." },
+  "welcomeTitle": { "message": "Welcome to Bulk Image Downloader", "description": "Welcome heading." },
+  "welcomeSubtitle": { "message": "Find and save the images on any page. It reads nothing until you click.", "description": "Welcome subtitle — the two promises." },
+  "welcomeHowLabel": { "message": "How it works", "description": "Label above the three onboarding steps." },
+  "welcomeStep1Title": { "message": "Click the icon", "description": "Welcome step 1 title." },
+  "welcomeStep1Body": {
+    "message": "On any page with images, click the Bulk Image Downloader toolbar icon. That click is the only moment the extension reads the page.",
+    "description": "Welcome step 1 body."
+  },
+  "welcomeStep2Title": { "message": "Filter the grid", "description": "Welcome step 2 title." },
+  "welcomeStep2Body": {
+    "message": "Sift by size, type, domain, or name in a fast grid built for thousands of images. Perceptual dedupe arrives in the next update.",
+    "description": "Welcome step 2 body."
+  },
+  "welcomeStep3Title": { "message": "Download", "description": "Welcome step 3 title." },
+  "welcomeStep3Body": {
+    "message": "Download images one by one today. Bulk ZIP and folder-routing land in upcoming updates.",
+    "description": "Welcome step 3 body."
+  },
+  "welcomePermissionPromiseTitle": { "message": "The permission promise", "description": "Permission promise heading." },
+  "welcomePermissionPromiseBody": {
+    "message": "This extension asks for no access to any website when you install it. It can read a page only the moment you click its icon on that tab — nothing before, and nothing running in the background.",
+    "description": "Permission promise body."
+  },
+  "welcomeUseIt": { "message": "For your product photos, your listings, your licensed assets.", "description": "Intended-use framing." },
+  "welcomeGetStarted": { "message": "Got it", "description": "Dismisses the welcome page." }
+}

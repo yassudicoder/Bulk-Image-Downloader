@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stress 1500 — Bulk Image Downloader fixture</title>
+<!--
+  ============================================================================
+  FIXTURE: stress-1500.html
+  PURPOSE: Performance / stress test for the image SCANNER and the results grid.
+  HOW IT WORKS:
+    All 1,500 <img> elements are generated in JS in a tight loop (the file
+    itself stays tiny). Each image is an inline SVG data: URI with an explicit
+    intrinsic width/height so the browser reports real naturalWidth /
+    naturalHeight. Sizes and fill colors are VARIED (40x40 icons up to
+    1200x800 hero images) so thumbnails + dimension filters are exercised.
+    ~1/3 of the images carry descriptive alt text; the filename in each URI
+    label varies so de-dupe / filename logic is exercised too.
+
+  EXPECTED CANDIDATE COUNT: ~1500 total
+    - 1474  <img> with plain src              -> sourceType: img
+    -   20  <img> with data-src only (no src) -> sourceType: lazy
+    -    6  <img> inside an OPEN shadow root   -> sourceType: shadow
+    ------------------------------------------------------------------
+       1500 candidates
+
+  PERF BUDGET: full scan should complete in < 2s and the grid must stay smooth.
+  Display size is clamped by CSS (does NOT affect naturalWidth/Height).
+  ============================================================================
+-->
+<style>
+  body { font-family: system-ui, sans-serif; margin: 16px; }
+  #grid { display: flex; flex-wrap: wrap; gap: 2px; }
+  /* Clamp on-screen size only; intrinsic (natural) dimensions are unchanged. */
+  #grid img { width: 60px; height: 40px; object-fit: cover; display: inline-block; background: #eee; }
+  .meta { color: #555; font-size: 14px; }
+  code { background: #f2f2f2; padding: 1px 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+  <h1>Stress fixture — 1,500 generated images</h1>
+  <p class="meta">
+    1,500 <code>&lt;img&gt;</code> elements built in JS: 1,474 with <code>src</code>,
+    20 lazy (<code>data-src</code> only), 6 inside an open shadow root.
+    Generation time: <span id="gentime">…</span>
+  </p>
+
+  <div id="grid" aria-label="stress grid"></div>
+  <!-- Host for the open shadow root that holds 6 extra images -->
+  <div id="shadow-host"></div>
+
+  <script>
+  (function () {
+    "use strict";
+    var t0 = performance.now();
+
+    // Build a self-contained inline-SVG data: URI. Fully percent-encoded
+    // (no literal spaces / quotes) so it is safe in src, srcset and CSS url().
+    // '#' -> %23 and '%' -> %25 inside the URI, per fixture spec.
+    function svgURI(w, h, hex, label) {
+      var fs = Math.max(10, Math.round(Math.min(w, h) / 6));
+      var svg =
+        "%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22" + w + "%22%20height=%22" + h + "%22%3E" +
+        "%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%23" + hex + "%22/%3E" +
+        "%3Ctext%20x=%2250%25%22%20y=%2250%25%22%20font-family=%22sans-serif%22%20font-size=%22" + fs +
+        "%22%20fill=%22%23ffffff%22%20text-anchor=%22middle%22%20dominant-baseline=%22middle%22%3E" +
+        encodeURIComponent(label) +
+        "%3C/text%3E%3C/svg%3E";
+      return "data:image/svg+xml," + svg;
+    }
+
+    // Varied intrinsic size buckets: small icons, medium, large hero images.
+    var sizes = [
+      [40, 40], [64, 64], [150, 150], [300, 200],
+      [480, 320], [600, 400], [800, 600], [1200, 800]
+    ];
+    var palette = [
+      "e6194b", "3cb44b", "ffe119", "4363d8", "f58231", "911eb4",
+      "46f0f0", "f032e6", "bcf60c", "fa8072", "008080", "9a6324",
+      "800000", "808000", "000075", "808080"
+    ];
+
+    var TOTAL = 1500, SHADOW_COUNT = 6, LAZY_COUNT = 20;
+    var mainCount = TOTAL - SHADOW_COUNT; // 1494 images live in the light DOM
+    var grid = document.getElementById("grid");
+    var frag = document.createDocumentFragment();
+    var lazyPlaced = 0;
+
+    for (var i = 0; i < mainCount; i++) {
+      var sz = sizes[i % sizes.length];
+      var hex = palette[i % palette.length];
+      var name = "photo_" + i + "_" + sz[0] + "x" + sz[1] + ".svg";
+      var uri = svgURI(sz[0], sz[1], hex, name);
+
+      var img = document.createElement("img");
+      // Spread 20 lazy images across the set (data-src only, no src).
+      if (i > 0 && i % 74 === 0 && lazyPlaced < LAZY_COUNT) {
+        img.setAttribute("data-src", uri);   // sourceType: lazy
+        lazyPlaced++;
+      } else {
+        img.src = uri;                        // sourceType: img
+      }
+      // ~1/3 get descriptive alt text.
+      if (i % 3 === 0) img.alt = "Product photo " + i + " (" + sz[0] + "x" + sz[1] + ")";
+      frag.appendChild(img);
+    }
+    grid.appendChild(frag);
+
+    // 6 additional images inside an OPEN shadow root (sourceType: shadow).
+    var host = document.getElementById("shadow-host");
+    var root = host.attachShadow({ mode: "open" });
+    var shadowWrap = document.createElement("div");
+    shadowWrap.setAttribute("style", "display:flex;flex-wrap:wrap;gap:2px");
+    for (var j = 0; j < SHADOW_COUNT; j++) {
+      var ssz = sizes[(j + 2) % sizes.length];
+      var simg = document.createElement("img");
+      simg.setAttribute("style", "width:60px;height:40px;object-fit:cover;background:#eee");
+      simg.src = svgURI(ssz[0], ssz[1], palette[(j + 4) % palette.length], "shadow_" + j + ".svg");
+      simg.alt = "Shadow image " + j;
+      shadowWrap.appendChild(simg);
+    }
+    root.appendChild(shadowWrap);
+
+    var ms = (performance.now() - t0).toFixed(1);
+    document.getElementById("gentime").textContent = ms + " ms";
+    // eslint-disable-next-line no-console
+    console.log("[stress-1500] built", TOTAL, "images in", ms, "ms",
+      "(", mainCount - lazyPlaced, "src +", lazyPlaced, "lazy +", SHADOW_COUNT, "shadow )");
+  })();
+  </script>
+</body>
+</html>

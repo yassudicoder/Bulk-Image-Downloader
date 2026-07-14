@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="optionsDocTitle">Options · Bulk Image Downloader</title>
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="bid-opt">
+    <header class="bid-opt__header">
+      <img src="../assets/icons/icon-48.png" width="32" height="32" alt="">
+      <div>
+        <h1 data-i18n="optionsHeading">Settings</h1>
+        <p class="bid-muted" data-i18n="extName">Bulk Image Downloader by TheOpenBox</p>
+      </div>
+      <span class="bid-badge bid-badge--muted" data-i18n="commonBeta">Beta</span>
+    </header>
+
+    <!-- Duplicate detection -->
+    <section class="bid-card">
+      <h2 data-i18n="optionsDedupeSection">Duplicate detection</h2>
+      <div class="bid-opt__row">
+        <div class="bid-opt__label">
+          <label for="dedupeThreshold" data-i18n="optionsDedupeThreshold">Near-duplicate sensitivity</label>
+          <p class="bid-hint" data-i18n="optionsDedupeThresholdHint"></p>
+        </div>
+        <div class="bid-opt__control bid-slider-wrap">
+          <span class="bid-slider-end" data-i18n="optionsDedupeStrict">Stricter</span>
+          <input id="dedupeThreshold" type="range" min="0" max="16" step="1" value="6">
+          <span class="bid-slider-end" data-i18n="optionsDedupeLoose">Looser</span>
+          <output id="dedupeThresholdVal" class="bid-mono">6</output>
+        </div>
+      </div>
+    </section>
+
+    <!-- Download history (cross-session dedupe memory) -->
+    <section class="bid-card">
+      <h2>
+        <span data-i18n="optionsHistorySection">Download history</span>
+        <span class="bid-badge bid-badge--muted" data-i18n="optionsComingSoon">Coming soon</span>
+      </h2>
+      <p class="bid-hint" data-i18n="optionsHistoryHint"></p>
+      <div class="bid-opt__actions">
+        <button class="bid-btn" id="clearHistory" disabled data-i18n="optionsClearHistory">Clear history</button>
+        <button class="bid-btn" id="exportHistory" disabled data-i18n="optionsExportHistory">Export history</button>
+      </div>
+    </section>
+
+    <!-- Download folders (folder rules) -->
+    <section class="bid-card">
+      <h2>
+        <span data-i18n="optionsFolderRulesSection">Download folders</span>
+        <span class="bid-badge bid-badge--muted" data-i18n="optionsComingSoon">Coming soon</span>
+      </h2>
+      <p class="bid-hint" data-i18n="optionsFolderRulesHint"></p>
+    </section>
+
+    <!-- Privacy & analytics -->
+    <section class="bid-card">
+      <h2 data-i18n="optionsAnalyticsSection">Privacy &amp; analytics</h2>
+      <label class="bid-opt__row bid-opt__row--toggle">
+        <span class="bid-opt__label">
+          <span data-i18n="optionsAnalyticsToggle">Send anonymous, content-free usage stats</span>
+          <p class="bid-hint" data-i18n="optionsAnalyticsHint"></p>
+        </span>
+        <span class="bid-switch">
+          <input type="checkbox" id="analyticsToggle">
+          <span class="bid-switch__track" aria-hidden="true"></span>
+        </span>
+      </label>
+    </section>
+
+    <!-- Language -->
+    <section class="bid-card">
+      <h2 data-i18n="optionsLocaleSection">Language</h2>
+      <div class="bid-opt__row">
+        <div class="bid-opt__label"><p class="bid-hint" data-i18n="optionsLocaleHint"></p></div>
+        <div class="bid-opt__control">
+          <select id="locale" class="bid-select">
+            <option value="" data-i18n="optionsLocaleAuto">Automatic (browser default)</option>
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="de">Deutsch</option>
+            <option value="fr">Français</option>
+            <option value="pt_BR">Português (Brasil)</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <div id="savedToast" class="bid-toast" role="status" aria-live="polite" hidden>
+      <span data-i18n="commonSaved">Saved</span>
+    </div>
+  </div>
+
+  <script src="../shared/constants.js"></script>
+  <script src="../shared/util.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/entitlements.js"></script>
+  <script src="../shared/analytics.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

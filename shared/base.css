@@ -1,0 +1,110 @@
+/*
+ * shared/base.css — reset + shared UI primitives. Depends on tokens.css (load it first).
+ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bid-bg);
+  color: var(--bid-text);
+  font-family: var(--bid-font);
+  font-size: var(--bid-fs-md);
+  line-height: var(--bid-lh);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, p { margin: 0; }
+a { color: var(--bid-accent); }
+
+:focus-visible { outline: none; box-shadow: var(--bid-focus-ring); border-radius: var(--bid-radius-sm); }
+
+/* Buttons ---------------------------------------------------------------- */
+.bid-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bid-space-2);
+  height: var(--bid-control-h);
+  padding: 0 var(--bid-space-3);
+  border: 1px solid var(--bid-border-strong);
+  border-radius: var(--bid-radius);
+  background: var(--bid-surface);
+  color: var(--bid-text);
+  font: inherit;
+  font-size: var(--bid-fs-md);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--bid-transition), border-color var(--bid-transition),
+              opacity var(--bid-transition);
+  user-select: none;
+}
+.bid-btn:hover:not(:disabled) { background: var(--bid-surface-2); }
+.bid-btn:active:not(:disabled) { background: var(--bid-surface-3); }
+.bid-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.bid-btn--primary {
+  background: var(--bid-accent);
+  border-color: var(--bid-accent);
+  color: var(--bid-accent-fg);
+}
+.bid-btn--primary:hover:not(:disabled) { background: var(--bid-accent-hover); border-color: var(--bid-accent-hover); }
+.bid-btn--primary:active:not(:disabled) { background: var(--bid-accent-active); border-color: var(--bid-accent-active); }
+
+.bid-btn--ghost { background: transparent; border-color: transparent; }
+.bid-btn--ghost:hover:not(:disabled) { background: var(--bid-surface-2); }
+
+.bid-btn--danger { color: var(--bid-danger); border-color: var(--bid-border); }
+.bid-btn--danger:hover:not(:disabled) { background: var(--bid-danger-soft); }
+
+.bid-btn--sm { height: 26px; padding: 0 var(--bid-space-2); font-size: var(--bid-fs-sm); }
+
+/* Inputs ----------------------------------------------------------------- */
+.bid-input, .bid-select {
+  height: var(--bid-control-h);
+  width: 100%;
+  padding: 0 var(--bid-space-2);
+  border: 1px solid var(--bid-border-strong);
+  border-radius: var(--bid-radius);
+  background: var(--bid-surface);
+  color: var(--bid-text);
+  font: inherit;
+  font-size: var(--bid-fs-md);
+}
+.bid-input:focus, .bid-select:focus { outline: none; border-color: var(--bid-accent); box-shadow: 0 0 0 2px var(--bid-accent-soft); }
+.bid-input::placeholder { color: var(--bid-text-faint); }
+
+.bid-field { display: flex; flex-direction: column; gap: var(--bid-space-1); }
+.bid-field > label { font-size: var(--bid-fs-sm); color: var(--bid-text-muted); font-weight: 500; }
+
+/* Checkbox --------------------------------------------------------------- */
+.bid-checkbox { display: inline-flex; align-items: center; gap: var(--bid-space-2); cursor: pointer; }
+.bid-checkbox input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--bid-accent); cursor: pointer; margin: 0; }
+
+/* Chips / badges --------------------------------------------------------- */
+.bid-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: var(--bid-radius-sm);
+  background: var(--bid-badge-bg);
+  color: var(--bid-badge-fg);
+  font-size: var(--bid-fs-xs);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.bid-badge--muted { background: var(--bid-surface-3); color: var(--bid-text-muted); }
+.bid-badge--warn { background: var(--bid-warn-soft); color: var(--bid-warn); }
+
+/* Utility ---------------------------------------------------------------- */
+.bid-visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.bid-muted { color: var(--bid-text-muted); }
+.bid-mono { font-family: var(--bid-mono); }
+.bid-scroll { scrollbar-width: thin; scrollbar-color: var(--bid-border-strong) transparent; }
+.bid-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.bid-scroll::-webkit-scrollbar-thumb { background: var(--bid-border-strong); border-radius: var(--bid-radius-pill); border: 2px solid transparent; background-clip: content-box; }

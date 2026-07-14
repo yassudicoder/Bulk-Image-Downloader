@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shadow DOM — Bulk Image Downloader fixture</title>
+<!--
+  ============================================================================
+  FIXTURE: shadow-dom.html
+  PURPOSE: Shadow-root traversal. The scanner walks OPEN shadow roots only.
+
+  STRUCTURE:
+    Host A  -> OPEN shadow root  : 3 <img>            (discoverable)
+       └─ nested Host B (inside A's shadow root) -> OPEN shadow root : 2 <img>
+                                                     (discoverable)
+    Host C  -> CLOSED shadow root : 1 <img>           (EXPECTED TO BE MISSED)
+
+  EXPECTED CANDIDATE COUNT:
+    - 5  images found  (3 in open root A + 2 in nested open root B)  sourceType: shadow
+    - 1  image MISSED  (inside the CLOSED root of Host C) — by design; the
+         scanner cannot reach closed roots. Comment marks it clearly.
+  ============================================================================
+-->
+<style>
+  body { font-family: system-ui, sans-serif; margin: 24px; line-height: 1.5; }
+  .host { border: 2px dashed #999; border-radius: 8px; padding: 12px; margin: 16px 0; }
+  .host > h3 { margin: 0 0 8px; }
+  .missed { border-color: #c92a2a; }
+  code { background: #f2f2f2; padding: 1px 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+  <h1>Shadow DOM traversal (open vs. closed roots)</h1>
+  <p>Open roots (A and nested B) yield <strong>5</strong> images. The closed root
+     in Host C holds 1 image that is <strong>expected to be missed</strong>.</p>
+
+  <div class="host" id="host-a">
+    <h3>Host A — <code>attachShadow({mode:'open'})</code> (3 images + nested host B)</h3>
+  </div>
+
+  <div class="host missed" id="host-c">
+    <h3>Host C — <code>attachShadow({mode:'closed'})</code> (1 image — EXPECTED MISSED)</h3>
+  </div>
+
+  <script>
+  (function () {
+    "use strict";
+    function svgURI(w, h, hex, label) {
+      var fs = Math.max(12, Math.round(Math.min(w, h) / 7));
+      var svg =
+        "%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22" + w + "%22%20height=%22" + h + "%22%3E" +
+        "%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%23" + hex + "%22/%3E" +
+        "%3Ctext%20x=%2250%25%22%20y=%2250%25%22%20font-family=%22sans-serif%22%20font-size=%22" + fs +
+        "%22%20fill=%22%23ffffff%22%20text-anchor=%22middle%22%20dominant-baseline=%22middle%22%3E" +
+        encodeURIComponent(label) +
+        "%3C/text%3E%3C/svg%3E";
+      return "data:image/svg+xml," + svg;
+    }
+    function mkImg(w, h, hex, label) {
+      var img = document.createElement("img");
+      img.src = svgURI(w, h, hex, label);
+      img.alt = label;
+      img.setAttribute("style", "width:120px;height:80px;object-fit:cover;margin:4px;border:1px solid #ccc");
+      return img;
+    }
+
+    // ---- Host A: OPEN shadow root with 3 images ----
+    var rootA = document.getElementById("host-a").attachShadow({ mode: "open" });
+    rootA.appendChild(mkImg(300, 200, "1971c2", "A-open-1.png"));
+    rootA.appendChild(mkImg(400, 300, "2f9e44", "A-open-2.png"));
+    rootA.appendChild(mkImg(240, 240, "e8590c", "A-open-3.png"));
+
+    // ---- Nested Host B INSIDE A's open shadow root, itself OPEN, 2 images ----
+    var hostB = document.createElement("div");
+    hostB.setAttribute("style", "border:2px dashed #666;border-radius:6px;padding:8px;margin-top:8px");
+    var labelB = document.createElement("div");
+    labelB.textContent = "Nested Host B — open shadow root (2 images)";
+    labelB.setAttribute("style", "font:12px system-ui;margin-bottom:6px");
+    hostB.appendChild(labelB);
+    rootA.appendChild(hostB);
+    var rootB = hostB.attachShadow({ mode: "open" });
+    rootB.appendChild(mkImg(360, 240, "9c36b5", "B-nested-open-1.png"));
+    rootB.appendChild(mkImg(200, 200, "0c8599", "B-nested-open-2.png"));
+
+    // ---- Host C: CLOSED shadow root with 1 image (EXPECTED TO BE MISSED) ----
+    // We keep no external reference to the closed root, mirroring real sites.
+    var rootC = document.getElementById("host-c").attachShadow({ mode: "closed" });
+    rootC.appendChild(mkImg(500, 320, "c92a2a", "C-closed-MISSED.png"));
+
+    console.log("[shadow-dom] open-root images: 5 (expected found), closed-root images: 1 (expected missed)");
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>srcset / WebP / AVIF — Bulk Image Downloader fixture</title>
+<!--
+  ============================================================================
+  FIXTURE: srcset-webp-avif.html
+  PURPOSE: Modern responsive images. Exercises srcset width-descriptor picking,
+           <picture> with type-switched <source> (avif/webp/fallback), and
+           .webp / .avif extension parsing.
+
+  CONTENTS & EXPECTED CANDIDATES (9 total):
+    (A) 3x <img srcset="…480w, …960w, …1440w">  -> sourceType: srcset
+          Each descriptor is a distinct data: URI of the matching intrinsic
+          size. The scanner's "prefer largest width descriptor" logic should
+          pick the 1440w (1440x960) URI as the download target.
+    (B) 3x <picture> with <source type="image/avif">, <source type="image/webp">
+          and an <img> SVG fallback                -> sourceType: picture
+          Each source points at a DISTINCT data: URI (avif can't be inlined, so
+          it is simulated with a differently-colored SVG + correct type attr).
+    (C) 3x <img src="…/*.webp | *.avif">           -> sourceType: img
+          Relative paths whose URL ends in .webp / .avif purely to exercise the
+          scanner's extension/type handling. NOTE: these 404 offline (broken,
+          naturalWidth 0) — they exist for URL/extension parsing, not rendering.
+      ------------------------------------------------------------------------
+       3 (srcset) + 3 (picture) + 3 (extension) = 9 candidates
+  ============================================================================
+-->
+<style>
+  body { font-family: system-ui, sans-serif; margin: 24px; line-height: 1.5; }
+  section { margin-bottom: 32px; }
+  h2 { border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .row img { max-width: 260px; height: auto; border: 1px solid #ccc; background: #eee; }
+  .note { color: #a00; font-size: 0.9rem; }
+  code { background: #f2f2f2; padding: 1px 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+  <h1>Responsive images: srcset, &lt;picture&gt;, WebP &amp; AVIF</h1>
+
+  <section>
+    <h2>(A) Multi-descriptor <code>srcset</code> — expect largest (1440w) picked</h2>
+    <div class="row" id="srcset-row"></div>
+  </section>
+
+  <section>
+    <h2>(B) <code>&lt;picture&gt;</code> — AVIF → WebP → SVG fallback</h2>
+    <div class="row" id="picture-row"></div>
+  </section>
+
+  <section>
+    <h2>(C) <code>.webp</code> / <code>.avif</code> extension parsing</h2>
+    <p class="note">These point at relative paths that end in .webp/.avif and
+      therefore 404 offline (broken images). They exist only to exercise the
+      scanner's extension/type handling — the URL string is what matters.</p>
+    <div class="row">
+      <img src="assets/sample-photo-1.webp" width="200" height="150" alt="WebP by extension (broken offline)">
+      <img src="assets/sample-photo-2.avif" width="200" height="150" alt="AVIF by extension (broken offline)">
+      <img src="assets/nested/hero-banner.webp" width="200" height="150" alt="WebP by extension (broken offline)">
+    </div>
+  </section>
+
+  <script>
+  (function () {
+    "use strict";
+    function svgURI(w, h, hex, label) {
+      var fs = Math.max(12, Math.round(Math.min(w, h) / 8));
+      var svg =
+        "%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22" + w + "%22%20height=%22" + h + "%22%3E" +
+        "%3Crect%20width=%22100%25%22%20height=%22100%25%22%20fill=%22%23" + hex + "%22/%3E" +
+        "%3Ctext%20x=%2250%25%22%20y=%2250%25%22%20font-family=%22sans-serif%22%20font-size=%22" + fs +
+        "%22%20fill=%22%23ffffff%22%20text-anchor=%22middle%22%20dominant-baseline=%22middle%22%3E" +
+        encodeURIComponent(label) +
+        "%3C/text%3E%3C/svg%3E";
+      return "data:image/svg+xml," + svg;
+    }
+
+    // (A) Three responsive <img srcset> — width descriptors 480/960/1440.
+    // Data: URIs are space-free & have no trailing comma, so srcset parses
+    // cleanly (internal "data:...," comma is part of the collected URL token).
+    var respSpecs = [
+      { hex: "2a7d6b", name: "landscape" },
+      { hex: "b5651d", name: "portrait" },
+      { hex: "3b5bdb", name: "wide" }
+    ];
+    var srow = document.getElementById("srcset-row");
+    respSpecs.forEach(function (s) {
+      var u480 = svgURI(480, 320, s.hex, s.name + "-480");
+      var u960 = svgURI(960, 640, s.hex, s.name + "-960");
+      var u1440 = svgURI(1440, 960, s.hex, s.name + "-1440");
+      var img = document.createElement("img");
+      img.setAttribute("srcset", u480 + " 480w, " + u960 + " 960w, " + u1440 + " 1440w");
+      img.setAttribute("sizes", "100vw");
+      img.src = u480; // src fallback for non-srcset consumers
+      img.alt = "Responsive " + s.name + " (480/960/1440w)";
+      srow.appendChild(img);
+    });
+
+    // (B) Three <picture> elements: AVIF source, WebP source, SVG <img> fallback.
+    var picSpecs = [
+      { hex: "c92a2a", name: "hero" },
+      { hex: "1971c2", name: "gallery" },
+      { hex: "5f3dc4", name: "banner" }
+    ];
+    var prow = document.getElementById("picture-row");
+    picSpecs.forEach(function (s) {
+      var pic = document.createElement("picture");
+
+      var avif = document.createElement("source");
+      avif.type = "image/avif";
+      avif.setAttribute("srcset", svgURI(800, 600, s.hex, s.name + "-AVIF"));
+
+      var webp = document.createElement("source");
+      webp.type = "image/webp";
+      webp.setAttribute("srcset", svgURI(800, 600, "888888", s.name + "-WEBP"));
+
+      var img = document.createElement("img");
+      img.src = svgURI(800, 600, "cccccc", s.name + "-SVG-fallback");
+      img.width = 260;
+      img.alt = "Picture " + s.name + " (avif/webp/svg)";
+
+      pic.appendChild(avif);
+      pic.appendChild(webp);
+      pic.appendChild(img);
+      prow.appendChild(pic);
+    });
+  })();
+  </script>
+</body>
+</html>

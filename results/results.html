@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="resultsDocTitle">Bulk Image Downloader — Results</title>
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="results.css">
+</head>
+<body>
+  <header class="bid-header">
+    <div class="bid-header__brand">
+      <img src="../assets/icons/icon-32.png" width="20" height="20" alt="">
+      <span data-i18n="resultsHeaderTitle">Bulk Image Downloader</span>
+      <span class="bid-badge bid-badge--muted" data-i18n="commonBeta">Beta</span>
+    </div>
+
+    <div class="bid-header__meta">
+      <strong id="countLabel" class="bid-count"></strong>
+      <span id="sourceLabel" class="bid-muted"></span>
+    </div>
+
+    <div class="bid-header__actions">
+      <label class="bid-thumb-control" title="" data-i18n-title="resultsThumbSize">
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor"/><rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor"/><rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor"/><rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor"/></svg>
+        <input id="thumbSize" type="range" min="90" max="300" step="10" value="150">
+      </label>
+      <button id="scanFullPageBtn" class="bid-btn bid-btn--sm" data-i18n="resultsScanFullPage"
+              data-i18n-title="resultsScanFullPageHint">Scan full page</button>
+      <button id="optionsBtn" class="bid-btn bid-btn--ghost bid-btn--sm" data-i18n-aria-label="commonSettings" title="" data-i18n-title="commonSettings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="bid-body">
+    <aside class="bid-sidebar bid-scroll" id="filterPanel" aria-label="Filters">
+      <h2 class="bid-sidebar__title" data-i18n="filterTitle">Filters</h2>
+
+      <div class="bid-field bid-field--row">
+        <div class="bid-field">
+          <label for="minWidth" data-i18n="filterMinWidth">Min width</label>
+          <div class="bid-input-suffix">
+            <input id="minWidth" class="bid-input" type="number" min="0" inputmode="numeric" placeholder="0">
+            <span data-i18n="filterDimensionUnit">px</span>
+          </div>
+        </div>
+        <div class="bid-field">
+          <label for="minHeight" data-i18n="filterMinHeight">Min height</label>
+          <div class="bid-input-suffix">
+            <input id="minHeight" class="bid-input" type="number" min="0" inputmode="numeric" placeholder="0">
+            <span data-i18n="filterDimensionUnit">px</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bid-field">
+        <label for="fileType" data-i18n="filterFileType">File type</label>
+        <select id="fileType" class="bid-select">
+          <option value="" data-i18n="filterAllTypes">All types</option>
+        </select>
+      </div>
+
+      <div class="bid-field">
+        <label for="domain" data-i18n="filterDomain">Source domain</label>
+        <select id="domain" class="bid-select">
+          <option value="" data-i18n="filterAllDomains">All domains</option>
+        </select>
+      </div>
+
+      <div class="bid-field">
+        <label for="nameContains" data-i18n="filterNameContains">Name contains</label>
+        <input id="nameContains" class="bid-input" type="text" data-i18n-placeholder="filterNamePlaceholder">
+      </div>
+
+      <div class="bid-dup-block">
+        <label class="bid-checkbox" title="" data-i18n-title="filterHideDuplicatesSoon">
+          <input type="checkbox" id="hideDuplicates" disabled>
+          <span data-i18n="filterHideDuplicates">Hide duplicates</span>
+          <span class="bid-badge bid-badge--muted" data-i18n="commonSoon">Soon</span>
+        </label>
+        <p class="bid-hint" data-i18n="filterHideDuplicatesSoon">Perceptual duplicate detection arrives in the next update.</p>
+      </div>
+
+      <div class="bid-sidebar__row">
+        <button id="resetFilters" class="bid-btn bid-btn--ghost bid-btn--sm" data-i18n="filterReset">Reset filters</button>
+        <span id="filterCount" class="bid-muted bid-mono"></span>
+      </div>
+
+      <hr class="bid-sep">
+
+      <div class="bid-select-group">
+        <button id="selectAllBtn" class="bid-btn bid-btn--sm" data-i18n="resultsSelectAllVisible">Select all filtered</button>
+        <button id="clearSelBtn" class="bid-btn bid-btn--ghost bid-btn--sm" data-i18n="resultsDeselectAll">Clear selection</button>
+      </div>
+    </aside>
+
+    <main class="bid-main">
+      <div id="analyticsPrompt" class="bid-banner" hidden>
+        <div class="bid-banner__body">
+          <strong data-i18n="analyticsPromptTitle">Help improve Bulk Image Downloader?</strong>
+          <p data-i18n="analyticsPromptBody"></p>
+        </div>
+        <div class="bid-banner__actions">
+          <button id="analyticsNo" class="bid-btn bid-btn--ghost bid-btn--sm" data-i18n="analyticsPromptNo">No thanks</button>
+          <button id="analyticsYes" class="bid-btn bid-btn--primary bid-btn--sm" data-i18n="analyticsPromptYes">Allow</button>
+        </div>
+      </div>
+
+      <div id="gridScroll" class="bid-grid-scroll bid-scroll" tabindex="0" role="grid" aria-label="Images">
+        <div id="gridSizer" class="bid-grid-sizer"></div>
+      </div>
+
+      <div id="emptyState" class="bid-state" hidden>
+        <div class="bid-state__icon" aria-hidden="true">🔍</div>
+        <h2 data-i18n="emptyTitle">No images found on this page</h2>
+        <p class="bid-muted" data-i18n="emptyBody"></p>
+        <button id="emptyScanFullPage" class="bid-btn bid-btn--primary" data-i18n="emptyScanFullPage">Scan full page</button>
+      </div>
+
+      <div id="errorState" class="bid-state" hidden>
+        <div class="bid-state__icon" aria-hidden="true">🚫</div>
+        <h2 id="errorTitle" data-i18n="errorTitle">Couldn't scan this page</h2>
+        <p id="errorBody" class="bid-muted" data-i18n="errorBody"></p>
+      </div>
+    </main>
+  </div>
+
+  <footer class="bid-footer">
+    <div class="bid-footer__info">
+      <span id="selectedLabel" class="bid-muted" data-i18n="footerNothingSelected">Select images to download</span>
+      <span id="sizeLabel" class="bid-muted bid-mono"></span>
+    </div>
+    <div class="bid-footer__actions">
+      <button id="downloadZipBtn" class="bid-btn" disabled data-i18n="footerDownloadZip"
+              title="" data-i18n-title="footerZipSoon">Download as ZIP</button>
+      <button id="downloadBtn" class="bid-btn bid-btn--primary" disabled data-i18n="footerDownloadSelected">Download selected</button>
+    </div>
+  </footer>
+
+  <div id="toast" class="bid-toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- shared core first, then page modules (classic scripts, IIFE globals on BID.*) -->
+  <script src="../shared/constants.js"></script>
+  <script src="../shared/util.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/entitlements.js"></script>
+  <script src="../shared/analytics.js"></script>
+  <script src="filters.js"></script>
+  <script src="grid.js"></script>
+  <script src="downloads.js"></script>
+  <script src="results.js"></script>
+</body>
+</html>

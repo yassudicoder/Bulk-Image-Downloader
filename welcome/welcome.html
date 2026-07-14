@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="welcomeDocTitle">Welcome · Bulk Image Downloader</title>
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="welcome.css">
+</head>
+<body>
+  <main class="bid-welcome">
+    <header class="bid-hero">
+      <img class="bid-hero__icon" src="../assets/icons/icon-128.png" width="72" height="72" alt="">
+      <h1 data-i18n="welcomeTitle">Welcome to Bulk Image Downloader</h1>
+      <p class="bid-hero__tagline" data-i18n="welcomeSubtitle">Find and save the images on any page. It reads nothing until you click.</p>
+    </header>
+
+    <section class="bid-how" aria-labelledby="howHeading">
+      <h2 id="howHeading" class="bid-section-label" data-i18n="welcomeHowLabel">How it works</h2>
+      <ol class="bid-steps">
+        <li class="bid-step">
+          <span class="bid-step__num" aria-hidden="true">1</span>
+          <h3 data-i18n="welcomeStep1Title">Click the icon</h3>
+          <p data-i18n="welcomeStep1Body"></p>
+        </li>
+        <li class="bid-step">
+          <span class="bid-step__num" aria-hidden="true">2</span>
+          <h3 data-i18n="welcomeStep2Title">Filter the grid</h3>
+          <p data-i18n="welcomeStep2Body"></p>
+        </li>
+        <li class="bid-step">
+          <span class="bid-step__num" aria-hidden="true">3</span>
+          <h3 data-i18n="welcomeStep3Title">Download</h3>
+          <p data-i18n="welcomeStep3Body"></p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="bid-promise" aria-labelledby="promiseHeading">
+      <div class="bid-promise__badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3l7 3v5c0 4.4-3 8.3-7 9.5C8 19.3 5 15.4 5 11V6l7-3z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+      <div class="bid-promise__content">
+        <h2 id="promiseHeading" data-i18n="welcomePermissionPromiseTitle">The permission promise</h2>
+        <p data-i18n="welcomePermissionPromiseBody"></p>
+      </div>
+    </section>
+
+    <section class="bid-analytics" id="analyticsAsk">
+      <h2 data-i18n="analyticsPromptTitle">Help improve Bulk Image Downloader?</h2>
+      <p class="bid-muted" data-i18n="analyticsPromptBody"></p>
+      <div class="bid-analytics__actions">
+        <button id="analyticsNo" class="bid-btn" data-i18n="analyticsPromptNo">No thanks</button>
+        <button id="analyticsYes" class="bid-btn bid-btn--primary" data-i18n="analyticsPromptYes">Allow</button>
+      </div>
+      <p id="analyticsAckChoice" class="bid-analytics__ack" hidden></p>
+    </section>
+
+    <footer class="bid-footer">
+      <p class="bid-muted" data-i18n="welcomeUseIt">For your product photos, your listings, your licensed assets.</p>
+      <button id="getStarted" class="bid-btn bid-btn--primary" data-i18n="welcomeGetStarted">Got it</button>
+    </footer>
+  </main>
+
+  <script src="../shared/constants.js"></script>
+  <script src="../shared/util.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/entitlements.js"></script>
+  <script src="../shared/analytics.js"></script>
+  <script src="welcome.js"></script>
+</body>
+</html>
