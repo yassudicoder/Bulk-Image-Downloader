@@ -48,6 +48,8 @@
   let grid = null;
   let settings = {};
   let dedupeComputed = false;   // whether _dupGroup tags are current for this candidate set
+  let pageHost = '';            // hostname of the scanned page (for "only from this page")
+  let lastDupRes = null;        // last dedupe result, so the sidebar note survives a filter reset
 
   const SOURCE_LABEL_KEY = {
     img: 'sourceImg', srcset: 'sourceSrcset', picture: 'sourcePicture',
@@ -103,6 +105,7 @@
     });
     byId = new Map(candidates.map((c) => [c.id, c]));
     dedupeComputed = false;
+    try { pageHost = new URL(scanMeta.pageUrl).hostname.toLowerCase(); } catch (_) { pageHost = ''; }
   }
 
   // --- Header / source -------------------------------------------------------
@@ -140,6 +143,8 @@
       domain: $('domain').value,
       nameContains: $('nameContains').value,
       hideDuplicates: $('hideDuplicates').checked,
+      onlyThisPage: $('onlyThisPage').checked,
+      pageHost: pageHost,
     });
   }
 
@@ -148,9 +153,29 @@
     readFilterState();
     filtered = BID.filters.apply(candidates, filterState);
     if (filterState.hideDuplicates && dedupeComputed) filtered = collapseDuplicates(filtered);
+    filtered = sortFiltered(filtered, currentSort());
     filterCount.textContent = t('filterShownOfTotal', [String(filtered.length), String(candidates.length)]);
     grid.setItems(filtered);
     BID.analytics.capture(BID.analytics.EVENTS.FILTER_APPLIED, { count: filtered.length });
+  }
+
+  // --- Sorting ---------------------------------------------------------------
+  function currentSort() { const el = $('sortBy'); return el ? el.value : 'dom'; }
+  function nameOf(c) { return (c.filename || c.url || '').toLowerCase(); }
+  // "Largest/Smallest first" sorts by estimated bytes. When the byte estimate is unknown
+  // (SVG, or images with no natural dimensions), fall back to a byte proxy in the SAME unit
+  // (area × nominal bpp) instead of raw pixel area, which would be ~4× larger and mis-sort.
+  function sizeOf(c) { return (c.estBytes && c.estBytes > 0) ? c.estBytes : Math.round(areaOf(c) * 0.25); }
+  function sortFiltered(list, mode) {
+    const arr = list.slice();
+    switch (mode) {
+      case 'nameAsc': arr.sort((a, b) => nameOf(a).localeCompare(nameOf(b)) || a.domIndex - b.domIndex); break;
+      case 'sizeDesc': arr.sort((a, b) => (sizeOf(b) - sizeOf(a)) || a.domIndex - b.domIndex); break;
+      case 'sizeAsc': arr.sort((a, b) => (sizeOf(a) - sizeOf(b)) || a.domIndex - b.domIndex); break;
+      case 'dimDesc': arr.sort((a, b) => (areaOf(b) - areaOf(a)) || a.domIndex - b.domIndex); break;
+      default: arr.sort((a, b) => a.domIndex - b.domIndex); break;
+    }
+    return arr;
   }
 
   // --- Selection -------------------------------------------------------------
@@ -402,9 +427,9 @@
     if (cb.checked && !dedupeComputed) {
       cb.disabled = true;
       try {
-        const res = await runDedupe();
-        updateDupNote(res);
-        showToast(res.dupCount ? t('dedupeHidden', String(res.dupCount)) : t('dedupeNone'));
+        lastDupRes = await runDedupe();
+        updateDupNote(lastDupRes);
+        showToast(lastDupRes.dupCount ? t('dedupeHidden', String(lastDupRes.dupCount)) : t('dedupeNone'));
       } catch (_) {
         showToast(t('dedupeFailed'));
         cb.checked = false;
@@ -412,6 +437,10 @@
         cb.disabled = false;
         setBusy(false);
       }
+    } else if (cb.checked && lastDupRes) {
+      updateDupNote(lastDupRes);           // re-show the note when re-enabled after a reset
+    } else if (!cb.checked) {
+      const n = $('dupHiddenNote'); if (n) n.hidden = true;
     }
     applyFilters();
     updateFooter();
@@ -477,6 +506,7 @@
 
   function resetDedupeState() {
     dedupeComputed = false;
+    lastDupRes = null;
     for (const c of candidates) c._dupGroup = null;
     const cb = $('hideDuplicates'); if (cb) cb.checked = false;
     const note = $('dupHiddenNote'); if (note) note.hidden = true;
@@ -530,9 +560,13 @@
     });
     $('nameContains').addEventListener('input', applyFiltersDebounced);
     $('hideDuplicates').addEventListener('change', onToggleDedupe);
+    $('onlyThisPage').addEventListener('change', applyFilters);
+    $('sortBy').addEventListener('change', applyFilters);
     $('resetFilters').addEventListener('click', () => {
       ['minWidth', 'minHeight', 'nameContains'].forEach((id) => { $(id).value = ''; });
-      $('fileType').value = ''; $('domain').value = ''; $('hideDuplicates').checked = false;
+      $('fileType').value = ''; $('domain').value = '';
+      $('hideDuplicates').checked = false; $('onlyThisPage').checked = false;
+      const n = $('dupHiddenNote'); if (n) n.hidden = true;
       applyFilters();
     });
     $('selectAllBtn').addEventListener('click', selectAllFiltered);
@@ -563,6 +597,83 @@
 
     $('analyticsYes').addEventListener('click', () => { BID.analytics.setOptIn(true); hideAnalyticsPrompt(); });
     $('analyticsNo').addEventListener('click', () => { BID.analytics.setOptIn(false); hideAnalyticsPrompt(); });
+
+    setupThemeToggle();
+    setupKebab();
+  }
+
+  // --- Header: theme toggle + overflow menu ----------------------------------
+  function effectiveTheme() {
+    const pref = (BID.theme && BID.theme.get) ? BID.theme.get() : 'auto';
+    if (pref === 'dark' || pref === 'light') return pref;
+    try { return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; } catch (_) { return 'light'; }
+  }
+  function updateThemeIcon() {
+    const dark = effectiveTheme() === 'dark';
+    const moon = $('iconMoon'), sun = $('iconSun');
+    if (moon) moon.hidden = dark;   // show the moon while light (click -> dark)
+    if (sun) sun.hidden = !dark;    // show the sun while dark  (click -> light)
+  }
+  function setupThemeToggle() {
+    const btn = $('themeToggle');
+    if (!btn || !BID.theme) return;
+    updateThemeIcon();
+    btn.addEventListener('click', () => {
+      BID.theme.set(effectiveTheme() === 'dark' ? 'light' : 'dark');
+      updateThemeIcon();
+    });
+    try {
+      window.addEventListener('storage', (e) => { if (e.key === 'bid:theme') updateThemeIcon(); });
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
+    } catch (_) {}
+  }
+  function setupKebab() {
+    const btn = $('kebabBtn'), menu = $('kebabMenu');
+    if (!btn || !menu) return;
+    const items = Array.from(menu.querySelectorAll('.bid-menu__item'));
+    items.forEach((it) => { it.tabIndex = -1; }); // roving tabindex
+
+    const isOpen = () => !menu.hidden;
+    function focusItem(i) {
+      const n = items.length; if (!n) return;
+      const idx = ((i % n) + n) % n;
+      items.forEach((it, j) => { it.tabIndex = j === idx ? 0 : -1; });
+      items[idx].focus();
+    }
+    function open(focusFirst) {
+      menu.hidden = false; btn.setAttribute('aria-expanded', 'true');
+      if (focusFirst) focusItem(0);
+    }
+    function close(returnFocus) {
+      if (menu.hidden) return;
+      const hadFocus = menu.contains(document.activeElement);
+      menu.hidden = true; btn.setAttribute('aria-expanded', 'false');
+      if (returnFocus || hadFocus) btn.focus(); // restore focus for keyboard users
+    }
+
+    btn.addEventListener('click', (e) => { e.stopPropagation(); if (isOpen()) close(false); else open(false); });
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); open(true); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); open(false); focusItem(items.length - 1); }
+    });
+    menu.addEventListener('keydown', (e) => {
+      const idx = items.indexOf(document.activeElement);
+      switch (e.key) {
+        case 'ArrowDown': e.preventDefault(); focusItem(idx + 1); break;
+        case 'ArrowUp': e.preventDefault(); focusItem(idx - 1); break;
+        case 'Home': e.preventDefault(); focusItem(0); break;
+        case 'End': e.preventDefault(); focusItem(items.length - 1); break;
+        case 'Escape': e.preventDefault(); close(true); break;
+        case 'Tab': close(false); break;
+        default: break;
+      }
+    });
+    document.addEventListener('click', (e) => { if (isOpen() && e.target !== btn && !menu.contains(e.target)) close(false); });
+
+    const help = $('menuHelp');
+    if (help) help.addEventListener('click', () => { close(false); location.href = chrome.runtime.getURL('welcome/welcome.html'); });
+    const about = $('menuAbout');
+    if (about) about.addEventListener('click', () => { close(true); showToast(t('aboutLine', BID.constants.EXT_VERSION)); });
   }
 
   // --- Keyboard --------------------------------------------------------------

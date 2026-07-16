@@ -73,6 +73,21 @@
     "description": "Shown when a full-page rescan can't reach the source tab."
   },
   "resultsThumbSize": { "message": "Thumbnail size", "description": "Label for thumbnail size control." },
+  "resultsSortBy": { "message": "Sort images", "description": "Accessible label/tooltip for the sort dropdown." },
+  "sortDom": { "message": "DOM order", "description": "Sort: original page order." },
+  "sortNameAsc": { "message": "Name A–Z", "description": "Sort: filename ascending." },
+  "sortSizeDesc": { "message": "Largest first", "description": "Sort: estimated file size descending." },
+  "sortSizeAsc": { "message": "Smallest first", "description": "Sort: estimated file size ascending." },
+  "sortDimDesc": { "message": "Widest first", "description": "Sort: pixel dimensions descending." },
+  "resultsToggleTheme": { "message": "Toggle light / dark", "description": "Header quick theme toggle button." },
+  "resultsMoreMenu": { "message": "More", "description": "Header overflow (kebab) menu button." },
+  "menuHelp": { "message": "How it works", "description": "Overflow menu: open the welcome/help page." },
+  "menuAbout": { "message": "About", "description": "Overflow menu: show version info." },
+  "aboutLine": {
+    "message": "Bulk Image Downloader v$version$ · 100% local, no tracking.",
+    "description": "About toast contents.",
+    "placeholders": { "version": { "content": "$1", "example": "0.1.0" } }
+  },
 
   "filterTitle": { "message": "Filters", "description": "Filter panel heading." },
   "filterMinWidth": { "message": "Min width", "description": "Minimum width filter label." },
@@ -122,6 +137,8 @@
   "dedupeNoteNone": { "message": "No duplicates found", "description": "Sidebar note when dedupe found none." },
   "dedupeLimited": { "message": "Too many images to compare — hid exact duplicates only.", "description": "Dedupe skipped the near-duplicate pass on a very large set." },
   "dedupeFailed": { "message": "Couldn't check for duplicates.", "description": "Dedupe failed unexpectedly." },
+  "filterOnlyThisPage": { "message": "Only from this page", "description": "Filter toggle: images hosted on the scanned site only." },
+  "filterOnlyThisPageHint": { "message": "Show only images hosted on this site — hides third-party / CDN images.", "description": "Tooltip for the only-this-page filter." },
   "filterReset": { "message": "Reset filters", "description": "Clears all filters." },
   "filterShownOfTotal": {
     "message": "$shown$ of $total$ shown",

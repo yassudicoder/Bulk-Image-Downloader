@@ -28,6 +28,26 @@ body {
 .bid-thumb-control { display: flex; align-items: center; gap: var(--bid-space-2); color: var(--bid-text-muted); }
 .bid-thumb-control input[type="range"] { width: 96px; accent-color: var(--bid-accent); }
 
+/* Sort dropdown in the header (base .bid-select is width:100%; constrain it here). */
+.bid-header__actions .bid-select.bid-sort { width: auto; min-width: 128px; }
+
+/* Overflow (kebab) menu */
+.bid-menu { position: relative; display: inline-flex; }
+.bid-menu__list {
+  position: absolute; top: calc(100% + 4px); right: 0; z-index: var(--bid-z-overlay);
+  min-width: 168px; padding: var(--bid-space-1);
+  background: var(--bid-surface); border: 1px solid var(--bid-border);
+  border-radius: var(--bid-radius); box-shadow: var(--bid-shadow-lg);
+  display: flex; flex-direction: column;
+}
+.bid-menu__item {
+  appearance: none; border: none; background: transparent; text-align: left;
+  padding: var(--bid-space-2) var(--bid-space-3); border-radius: var(--bid-radius-sm);
+  color: var(--bid-text); font: inherit; font-size: var(--bid-fs-md); cursor: pointer; white-space: nowrap;
+}
+.bid-menu__item:hover { background: var(--bid-surface-2); }
+.bid-menu__item:focus-visible { outline: none; box-shadow: var(--bid-focus-ring); }
+
 /* Body: sidebar + main ---------------------------------------------------- */
 .bid-body { grid-row: 2; display: grid; grid-template-columns: var(--bid-sidebar-w) 1fr; min-height: 0; }
 
