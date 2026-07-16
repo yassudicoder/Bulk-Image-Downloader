@@ -3,241 +3,272 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bulk Image Downloader — save every image on a page, privately</title>
-<meta name="description" content="Bulk Image Downloader finds every image on a page — even lazy-loaded ones — lets you filter and de-duplicate them, then downloads them individually or as a ZIP. All on your device. No account, no uploads, no tracking.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%2315803d'/%3E%3Cpath d='M12 4v9m0 0l-4-4m4 4l4-4M6 18h12' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>Bulk Image Downloader — every image on the page, in one pass</title>
+<meta name="description" content="A privacy-first Chrome extension that scans a whole page for images — even lazy-loaded and background ones — then filters, de-duplicates and saves them as files or a ZIP. Everything runs on your device.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%2315803d'/%3E%3Cpath d='M12 4v9m0 0l-4-4m4 4l4-4M6 18h12' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
-/* ---------- Tokens ---------- */
+/* ============ TOKENS ============ */
 :root{
-  --bg:#f4f7f4; --surface:#ffffff; --surface-2:#eef3 ee; --surface-2:#eef3ef; --border:#dce4dd;
-  --ink:#0f1c15; --muted:#54655c; --faint:#83938a;
-  --accent:#15803d; --accent-2:#16a34a; --accent-strong:#14532d; --accent-soft:#dcf3e3; --on-accent:#ffffff;
-  --star:#e0a91b;
-  --shadow-sm:0 1px 2px rgba(9,30,18,.06),0 1px 3px rgba(9,30,18,.10);
-  --shadow:0 10px 30px rgba(9,30,18,.10);
-  --shadow-lg:0 26px 60px rgba(9,30,18,.18);
-  --radius:14px; --radius-lg:22px; --radius-sm:8px;
-  --maxw:1140px;
+  --paper:#eaeee8; --surface:#f5f7f3; --surface-2:#e2e7df;
+  --ink:#10160f; --muted:#525c50; --faint:#7c867a;
+  --line:#c9d2c7; --line-strong:#a6b2a4;
+  --accent:#15803d; --accent-bright:#1a9e4b; --on-accent:#ffffff; --accent-soft:#d8ebdd;
+  --frame:#dbe1d8; --star:#b7791f;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  --mono:ui-monospace,"SF Mono","Cascadia Code",Consolas,"Liberation Mono",monospace;
+  --maxw:1200px;
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme]){
-    --bg:#0b100d; --surface:#111814; --surface-2:#161f1a; --border:#243029;
-    --ink:#e7f0ea; --muted:#9fb0a6; --faint:#6d7d74;
-    --accent:#34d36a; --accent-2:#4ade80; --accent-strong:#bbf7d0; --accent-soft:#14311f; --on-accent:#04160b;
-    --star:#eab308;
-    --shadow-sm:0 1px 2px rgba(0,0,0,.5);
-    --shadow:0 10px 30px rgba(0,0,0,.5);
-    --shadow-lg:0 26px 60px rgba(0,0,0,.6);
-  }
-}
+@media (prefers-color-scheme:dark){:root:not([data-theme]){
+  --paper:#0a0e0b; --surface:#0f150f; --surface-2:#151d16;
+  --ink:#e8efe4; --muted:#93a094; --faint:#66746a;
+  --line:#202c22; --line-strong:#33463a;
+  --accent:#34d36a; --accent-bright:#57e884; --on-accent:#04160b; --accent-soft:#122b1a;
+  --frame:#141d17; --star:#d0a63a;
+}}
 :root[data-theme="dark"]{
-  --bg:#0b100d; --surface:#111814; --surface-2:#161f1a; --border:#243029;
-  --ink:#e7f0ea; --muted:#9fb0a6; --faint:#6d7d74;
-  --accent:#34d36a; --accent-2:#4ade80; --accent-strong:#bbf7d0; --accent-soft:#14311f; --on-accent:#04160b;
-  --star:#eab308;
-  --shadow-sm:0 1px 2px rgba(0,0,0,.5);
-  --shadow:0 10px 30px rgba(0,0,0,.5);
-  --shadow-lg:0 26px 60px rgba(0,0,0,.6);
+  --paper:#0a0e0b; --surface:#0f150f; --surface-2:#151d16;
+  --ink:#e8efe4; --muted:#93a094; --faint:#66746a;
+  --line:#202c22; --line-strong:#33463a;
+  --accent:#34d36a; --accent-bright:#57e884; --on-accent:#04160b; --accent-soft:#122b1a;
+  --frame:#141d17; --star:#d0a63a; color-scheme:dark;
 }
 :root[data-theme="light"]{ color-scheme:light; }
 :root{ color-scheme:light dark; }
 
-/* ---------- Reset-ish ---------- */
+/* ============ BASE ============ */
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;scroll-padding-top:84px}
-body{
-  font-family:var(--sans); color:var(--ink); background:var(--bg);
-  line-height:1.6; -webkit-font-smoothing:antialiased; overflow-x:hidden;
-}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
-:focus-visible{outline:none;box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--accent);border-radius:6px}
+::selection{background:var(--accent);color:var(--on-accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
 
-/* ---------- Utilities ---------- */
-.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
-.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600}
+/* type roles */
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
-h1,h2,h3{line-height:1.1;letter-spacing:-.02em;text-wrap:balance;font-weight:800}
-.section{padding:96px 0;position:relative}
-.section__head{max-width:620px;margin-bottom:48px}
-.section__head h2{font-size:clamp(28px,4vw,42px);margin:14px 0 12px}
-.section__head p{color:var(--muted);font-size:18px}
-.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.serif{font-family:var(--serif)}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.label--accent{color:var(--accent)}
+h1,h2,h3{font-family:var(--serif);font-weight:700;line-height:1.02;letter-spacing:-.015em;text-wrap:balance}
+.num{font-variant-numeric:tabular-nums}
+
+/* crop marks on framed things */
+.crop{position:relative}
+.crop::before,.crop::after{content:"";position:absolute;width:9px;height:9px;pointer-events:none;z-index:2}
+.crop::before{top:0;left:0;border-top:1.5px solid var(--accent);border-left:1.5px solid var(--accent)}
+.crop::after{bottom:0;right:0;border-bottom:1.5px solid var(--accent);border-right:1.5px solid var(--accent)}
+
+/* buttons */
+.btn{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;
+  display:inline-flex;align-items:center;gap:9px;padding:12px 18px;border:1px solid var(--ink);cursor:pointer;
+  background:var(--ink);color:var(--paper);transition:background .15s,color .15s,border-color .15s,transform .1s}
+.btn:active{transform:translateY(1px)}
+.btn--fill{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn--fill:hover{background:var(--accent-bright);border-color:var(--accent-bright)}
+.btn--line{background:transparent;color:var(--ink);border-color:var(--line-strong)}
+.btn--line:hover{border-color:var(--ink)}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .7s ease,transform .7s ease}
 .reveal.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
 
-/* ---------- Buttons ---------- */
-.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--sans);font-weight:600;font-size:15px;
-  padding:11px 18px;border-radius:var(--radius);border:1px solid transparent;cursor:pointer;transition:transform .12s ease,background .15s ease,border-color .15s ease;white-space:nowrap}
-.btn:active{transform:translateY(1px)}
-.btn--primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
-.btn--primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
-.btn--ghost{background:transparent;color:var(--ink);border-color:var(--border)}
-.btn--ghost:hover{background:var(--surface-2)}
-.btn--lg{padding:14px 24px;font-size:16px}
-
-/* ---------- Nav ---------- */
-.nav{position:sticky;top:0;z-index:50;backdrop-filter:saturate(140%) blur(10px);
-  background:color-mix(in srgb,var(--bg) 80%,transparent);border-bottom:1px solid var(--border)}
-.nav__in{display:flex;align-items:center;gap:20px;height:64px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em}
-.brand__mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(160deg,#22c55e,#15803d);
-  display:grid;place-items:center;box-shadow:var(--shadow-sm)}
-.brand__mark svg{width:18px;height:18px}
-.nav__links{display:flex;gap:6px;margin-left:14px}
-.nav__links a{padding:8px 12px;border-radius:9px;color:var(--muted);font-weight:500;font-size:15px;transition:color .15s,background .15s}
-.nav__links a:hover{color:var(--ink);background:var(--surface-2)}
-.nav__right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface);
-  display:grid;place-items:center;cursor:pointer;color:var(--muted)}
-.icon-btn:hover{color:var(--ink)}
-.icon-btn svg{width:18px;height:18px}
+/* ============ NAV ============ */
+.nav{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--paper) 88%,transparent);
+  backdrop-filter:saturate(160%) blur(8px);border-bottom:1px solid var(--line)}
+.nav__in{display:flex;align-items:center;gap:26px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.02em}
+.brand__mk{width:26px;height:26px;background:var(--accent);display:grid;place-items:center}
+.brand__mk svg{width:15px;height:15px}
+.brand small{color:var(--faint);font-weight:400}
+.nav__links{display:flex;gap:22px;margin-left:6px}
+.nav__links a{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 0;position:relative}
+.nav__links a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1.5px;background:var(--accent);transition:right .2s}
+.nav__links a:hover{color:var(--ink)}
+.nav__links a:hover::after{right:0}
+.nav__right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.tgl{width:34px;height:34px;border:1px solid var(--line-strong);background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+.tgl:hover{color:var(--ink);border-color:var(--ink)}
+.tgl svg{width:16px;height:16px}
 #sun{display:none}
-:root[data-theme="dark"] #sun{display:block} :root[data-theme="dark"] #moon{display:none}
+:root[data-theme="dark"] #sun{display:block}:root[data-theme="dark"] #moon{display:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme]) #sun{display:block}:root:not([data-theme]) #moon{display:none}}
-@media (max-width:860px){.nav__links{display:none}}
+@media (max-width:820px){.nav__links{display:none}}
 
-/* ---------- Hero ---------- */
-.hero{position:relative;padding:72px 0 40px;overflow:hidden}
-.hero::before{content:"";position:absolute;inset:-20% -10% auto -10%;height:640px;z-index:-1;
-  background:radial-gradient(60% 60% at 70% 20%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 70%),
-             radial-gradient(50% 50% at 15% 0%,color-mix(in srgb,var(--accent-2) 14%,transparent),transparent 70%)}
-.hero__grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
-.hero h1{font-size:clamp(34px,5.2vw,60px);margin:16px 0}
-.hero h1 .hl{color:var(--accent);position:relative;white-space:nowrap}
-.hero p.lede{font-size:19px;color:var(--muted);max-width:37ch;margin-bottom:26px}
-.hero__cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-.proof{display:flex;align-items:center;gap:14px;margin-top:22px;color:var(--muted);font-size:14px;flex-wrap:wrap}
-.stars{color:var(--star);letter-spacing:2px}
-.proof .dot{width:4px;height:4px;border-radius:50%;background:var(--faint)}
-@media (max-width:860px){.hero__grid{grid-template-columns:1fr;gap:36px}.hero__art{order:-1}}
+/* ============ HERO ============ */
+.hero{padding:64px 0 40px;position:relative}
+.hero__grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.hero__meta{display:flex;gap:14px;align-items:center;margin-bottom:26px;flex-wrap:wrap}
+.hero__meta .tick{width:7px;height:7px;background:var(--accent);border-radius:50%;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.hero h1{font-size:clamp(38px,5.6vw,68px)}
+.hero h1 em{font-style:italic;color:var(--accent)}
+.hero__sub{font-size:18px;color:var(--muted);max-width:44ch;margin:22px 0 12px}
+.readout{font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;color:var(--ink);border:1px solid var(--line);
+  padding:10px 14px;margin:22px 0 26px;display:inline-flex;gap:14px;align-items:center;background:var(--surface)}
+.readout .on{color:var(--accent);animation:blink 1.6s steps(1) infinite}
+@keyframes blink{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.readout .on{animation:none}}
+.hero__cta{display:flex;gap:12px;flex-wrap:wrap}
+.hero__proof{margin-top:24px;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.hero__proof .stars{color:var(--star);letter-spacing:2px}
 
-/* ---------- Product window (mockup) ---------- */
-.win{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
-  box-shadow:var(--shadow-lg);overflow:hidden}
-.win__bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)}
-.win__bar .b-brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
-.win__bar .b-brand .brand__mark{width:22px;height:22px;border-radius:7px}
-.win__bar .b-brand .brand__mark svg{width:13px;height:13px}
-.pill{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:600}
-.win__meta{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted)}
-.win__body{padding:14px}
-.tabs{display:flex;gap:20px;padding:0 2px 10px;border-bottom:1px solid var(--border);margin-bottom:14px}
-.tab{font-size:14px;font-weight:600;color:var(--muted);padding-bottom:8px;border-bottom:2px solid transparent;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--sans)}
-.tab .c{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:4px}
-.tab.is-active{color:var(--accent);border-bottom-color:var(--accent)}
-.tab.is-active .c{color:var(--accent)}
-.grid-imgs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.thumb{position:relative;aspect-ratio:4/3;border-radius:12px;overflow:hidden;border:2px solid transparent;cursor:pointer;box-shadow:var(--shadow-sm);transition:border-color .15s,transform .12s}
-.thumb:hover{transform:translateY(-2px)}
-.thumb.sel{border-color:var(--accent)}
-.thumb .ph{position:absolute;inset:0}
-.thumb .dim{position:absolute;left:6px;bottom:6px;font-family:var(--mono);font-size:10px;color:#fff;background:rgba(12,20,15,.72);padding:1px 6px;border-radius:999px}
-.thumb .chk{position:absolute;top:6px;left:6px;width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,.9);border:1.5px solid rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.3)}
-.thumb.sel .chk{background:var(--accent);border-color:var(--accent)}
-.thumb.sel .chk::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
-.thumb .keep{position:absolute;top:6px;left:30px;font-family:var(--mono);font-size:9px;font-weight:700;color:var(--on-accent);background:var(--accent);padding:2px 5px;border-radius:6px;display:none}
-.thumb.keep-badge .keep{display:block}
-.win__foot{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--border);margin-top:14px}
-.win__foot .sel-label{font-size:13px;color:var(--muted)}
-.win__foot .sel-label b{color:var(--ink)}
-.win__foot .grow{margin-left:auto}
-.win__foot .btn{padding:8px 14px;font-size:13px}
+/* contact sheet */
+.sheet{background:var(--surface);border:1px solid var(--line);padding:14px}
+.sheet__cap{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:0 2px 10px}
+.sheet__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:relative;overflow:hidden}
+.scanline{position:absolute;left:0;right:0;height:2px;top:0;background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  box-shadow:0 0 18px 3px color-mix(in srgb,var(--accent) 60%,transparent);z-index:3;opacity:0;pointer-events:none}
+.sheet.scan .scanline{animation:sweep 1.5s ease-in-out .2s 1}
+@keyframes sweep{0%{top:0;opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+@media (prefers-reduced-motion:reduce){.sheet.scan .scanline{animation:none}}
+.fr{position:relative;aspect-ratio:1;overflow:hidden;background:var(--frame)}
+.fr .ph{position:absolute;inset:0}
+.fr .co{position:absolute;top:4px;left:5px;font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.9);letter-spacing:.05em;z-index:2;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.fr .mk{position:absolute;top:4px;right:5px;width:13px;height:13px;border:1.5px solid rgba(255,255,255,.85);z-index:2}
+.fr.pick .mk{background:var(--accent);border-color:var(--accent)}
+.fr.pick .mk::after{content:"";position:absolute;left:3.5px;top:1px;width:3px;height:6px;border:solid var(--on-accent);border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+.fr.pick{outline:2px solid var(--accent);outline-offset:-2px}
+@media (max-width:820px){.hero__grid{grid-template-columns:1fr;gap:40px}.hero__art{order:-1}}
 
-/* photo-ish gradients */
-.g1{background:linear-gradient(135deg,#7dd3fc,#2563eb 60%,#1e3a8a)}
-.g2{background:linear-gradient(135deg,#86efac,#16a34a 60%,#14532d)}
-.g3{background:linear-gradient(135deg,#fdba74,#ea580c 60%,#7c2d12)}
-.g4{background:linear-gradient(135deg,#c4b5fd,#7c3aed 60%,#4c1d95)}
-.g5{background:linear-gradient(135deg,#fda4af,#e11d48 60%,#881337)}
-.g6{background:linear-gradient(135deg,#a7f3d0,#0d9488 60%,#134e4a)}
-.g7{background:linear-gradient(160deg,#fde68a,#f59e0b 60%,#92400e)}
-.g8{background:linear-gradient(135deg,#94a3b8,#475569 60%,#1e293b)}
+/* photo gradients */
+.p1{background:linear-gradient(135deg,#7dd3fc,#2563eb 62%,#172554)}
+.p2{background:linear-gradient(135deg,#86efac,#15803d 62%,#14532d)}
+.p3{background:linear-gradient(135deg,#fdba74,#ea580c 62%,#7c2d12)}
+.p4{background:linear-gradient(135deg,#c4b5fd,#7c3aed 62%,#3b0764)}
+.p5{background:linear-gradient(135deg,#fda4af,#e11d48 62%,#881337)}
+.p6{background:linear-gradient(135deg,#5eead4,#0d9488 62%,#134e4a)}
+.p7{background:linear-gradient(160deg,#fde68a,#f59e0b 62%,#92400e)}
+.p8{background:linear-gradient(135deg,#a5b4fc,#4f46e5 62%,#312e81)}
+.p9{background:linear-gradient(135deg,#bef264,#65a30d 62%,#365314)}
+.p10{background:linear-gradient(135deg,#f0abfc,#c026d3 62%,#701a75)}
+.p11{background:linear-gradient(135deg,#94a3b8,#475569 62%,#1e293b)}
+.p12{background:linear-gradient(135deg,#67e8f9,#0891b2 62%,#164e63)}
 
-/* ---------- Try it ---------- */
-.try{background:var(--surface-2)}
-.try__panel{max-width:960px;margin:0 auto}
-.try .win{box-shadow:var(--shadow)}
-.hint{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:center;margin-top:16px}
+/* ============ SECTION SCAFFOLD ============ */
+.sec{padding:88px 0;border-top:1px solid var(--line)}
+.sec__head{display:flex;align-items:baseline;gap:16px;margin-bottom:44px;flex-wrap:wrap}
+.sec__idx{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.1em}
+.sec__head h2{font-size:clamp(26px,3.6vw,40px);flex:1;min-width:260px}
+.sec__head p{color:var(--muted);max-width:40ch;font-size:15px}
 
-/* ---------- Features ---------- */
-.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.feat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow-sm);transition:transform .15s,box-shadow .15s}
-.feat:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
-.feat__ic{width:40px;height:40px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin-bottom:14px}
-.feat__ic svg{width:20px;height:20px}
-.feat h3{font-size:16px;margin-bottom:6px;letter-spacing:-.01em}
-.feat p{font-size:14px;color:var(--muted);line-height:1.55}
-.badge{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:999px;font-weight:600}
-@media (max-width:900px){.feat-grid{grid-template-columns:repeat(2,1fr)}}
-@media (max-width:520px){.feat-grid{grid-template-columns:1fr}.grid-imgs{grid-template-columns:repeat(2,1fr)}}
+/* ============ PROCESS ============ */
+.proc{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line)}
+.proc__step{padding:24px;border-right:1px solid var(--line);position:relative}
+.proc__step:last-child{border-right:0}
+.proc__n{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.1em}
+.proc__step h3{font-family:var(--serif);font-size:22px;margin:12px 0 8px}
+.proc__step p{font-size:13.5px;color:var(--muted)}
+.proc__step .arw{position:absolute;right:-9px;top:28px;z-index:2;color:var(--line-strong);background:var(--paper);font-family:var(--mono)}
+@media (max-width:820px){.proc{grid-template-columns:1fr 1fr}.proc__step:nth-child(2){border-right:0}}
+@media (max-width:520px){.proc{grid-template-columns:1fr}.proc__step{border-right:0;border-bottom:1px solid var(--line)}.proc__step:last-child{border-bottom:0}.proc__step .arw{display:none}}
 
-/* ---------- Blog ---------- */
-.blog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.post{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);transition:transform .15s,box-shadow .15s;display:flex;flex-direction:column}
-.post:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
-.post__cover{height:120px}
-.post__body{padding:20px;display:flex;flex-direction:column;gap:10px;flex:1}
-.post__tag{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
-.post h3{font-size:18px;letter-spacing:-.01em}
-.post p{font-size:14px;color:var(--muted);flex:1}
-.post__meta{font-family:var(--mono);font-size:12px;color:var(--faint);display:flex;gap:10px;align-items:center}
-.readmore{color:var(--accent);font-weight:600;font-size:14px;display:inline-flex;gap:6px;align-items:center}
-@media (max-width:900px){.blog-grid{grid-template-columns:1fr}}
+/* ============ TRY IT (instrument) ============ */
+.try{background:var(--surface)}
+.inst{border:1px solid var(--line-strong);background:var(--paper)}
+.inst__bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.inst__bar .b{display:flex;align-items:center;gap:8px;color:var(--ink)}
+.inst__bar .b .brand__mk{width:18px;height:18px}
+.inst__bar .b .brand__mk svg{width:11px;height:11px}
+.inst__bar .rt{margin-left:auto;color:var(--muted)}
+.tabset{display:flex;gap:24px;padding:12px 16px 0;border-bottom:1px solid var(--line)}
+.tb{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:none;border:0;border-bottom:2px solid transparent;padding:0 0 12px;cursor:pointer}
+.tb .n{color:var(--faint);margin-left:5px}
+.tb.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tb.on .n{color:var(--accent)}
+.inst__grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:18px}
+.cell{position:relative;aspect-ratio:1;overflow:hidden;background:var(--frame);cursor:pointer;outline:2px solid transparent;outline-offset:-2px;transition:outline-color .12s}
+.cell .ph{position:absolute;inset:0}
+.cell.pick{outline-color:var(--accent)}
+.cell .mk{position:absolute;top:5px;left:5px;width:15px;height:15px;border:1.5px solid rgba(255,255,255,.85);background:rgba(0,0,0,.15);z-index:2}
+.cell.pick .mk{background:var(--accent);border-color:var(--accent)}
+.cell.pick .mk::after{content:"";position:absolute;left:4px;top:1px;width:3.5px;height:7px;border:solid var(--on-accent);border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+.cell .dm{position:absolute;bottom:4px;left:5px;font-family:var(--mono);font-size:9px;color:#fff;background:rgba(10,16,11,.72);padding:1px 5px;z-index:2}
+.cell .kp{position:absolute;bottom:4px;right:5px;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.06em;color:var(--on-accent);background:var(--accent);padding:2px 5px;z-index:2;display:none}
+.cell.keep .kp{display:block}
+.inst__foot{display:flex;align-items:center;gap:16px;padding:14px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.inst__foot .out{font-family:var(--mono);font-size:12px;color:var(--ink)}
+.inst__foot .out b{color:var(--accent)}
+.inst__foot .grow{margin-left:auto;display:flex;gap:8px}
+.inst__foot .btn{padding:9px 14px}
+.hint{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--faint);margin-top:14px;text-align:center}
+@media (max-width:640px){.inst__grid{grid-template-columns:repeat(3,1fr)}}
 
-/* ---------- FAQ ---------- */
-.faq{max-width:780px;margin:0 auto}
-.qa{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);margin-bottom:12px;overflow:hidden}
-.qa summary{list-style:none;cursor:pointer;padding:18px 22px;display:flex;align-items:center;gap:14px;font-weight:600;font-size:16px}
+/* ============ FEATURES (spec sheet) ============ */
+.spec{border-top:1px solid var(--line-strong)}
+.spec__row{display:grid;grid-template-columns:180px 1fr auto;gap:24px;align-items:baseline;padding:20px 4px;border-bottom:1px solid var(--line);transition:background .15s}
+.spec__row:hover{background:var(--surface)}
+.spec__k{font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);display:flex;align-items:center;gap:10px}
+.spec__k .no{color:var(--faint);font-size:11px}
+.spec__v{color:var(--muted);font-size:15px;max-width:64ch}
+.spec__v b{color:var(--ink);font-weight:600}
+.spec__tag{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);padding:2px 7px;white-space:nowrap}
+@media (max-width:720px){.spec__row{grid-template-columns:1fr;gap:6px}.spec__tag{justify-self:start}}
+
+/* ============ BLOG (field notes index) ============ */
+.notes{border-top:1px solid var(--line-strong)}
+.note{display:grid;grid-template-columns:120px 1fr 90px;gap:24px;align-items:baseline;padding:26px 4px;border-bottom:1px solid var(--line);transition:background .15s;cursor:pointer}
+.note:hover{background:var(--surface)}
+.note__date{font-family:var(--mono);font-size:11.5px;color:var(--faint);letter-spacing:.04em}
+.note__main h3{font-family:var(--serif);font-size:23px;margin-bottom:8px;transition:color .15s}
+.note:hover .note__main h3{color:var(--accent)}
+.note__main p{font-size:14.5px;color:var(--muted);max-width:60ch}
+.note__main .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:inline-block}
+.note__rt{font-family:var(--mono);font-size:11.5px;color:var(--faint);text-align:right}
+@media (max-width:720px){.note{grid-template-columns:1fr;gap:8px}.note__rt{text-align:left}}
+
+/* ============ FAQ ============ */
+.faq{border-top:1px solid var(--line-strong)}
+.qa{border-bottom:1px solid var(--line)}
+.qa summary{list-style:none;cursor:pointer;padding:22px 4px;display:grid;grid-template-columns:56px 1fr 28px;gap:16px;align-items:center;font-family:var(--serif);font-size:19px}
 .qa summary::-webkit-details-marker{display:none}
-.qa summary .plus{margin-left:auto;width:22px;height:22px;flex:0 0 auto;position:relative;transition:transform .2s}
-.qa summary .plus::before,.qa summary .plus::after{content:"";position:absolute;background:var(--accent);border-radius:2px}
-.qa summary .plus::before{left:4px;right:4px;top:10px;height:2px}
-.qa summary .plus::after{top:4px;bottom:4px;left:10px;width:2px;transition:opacity .2s}
-.qa[open] summary .plus::after{opacity:0}
-.qa[open] summary .plus{transform:rotate(90deg)}
-.qa__a{padding:0 22px 20px;color:var(--muted);font-size:15px;line-height:1.6}
+.qa summary .qn{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.qa summary .pm{justify-self:end;width:20px;height:20px;position:relative}
+.qa summary .pm::before,.qa summary .pm::after{content:"";position:absolute;background:var(--accent);border-radius:1px}
+.qa summary .pm::before{left:3px;right:3px;top:9px;height:2px}
+.qa summary .pm::after{top:3px;bottom:3px;left:9px;width:2px;transition:opacity .2s}
+.qa[open] summary .pm::after{opacity:0}
+.qa__a{padding:0 4px 24px 76px;color:var(--muted);font-size:15px;max-width:70ch}
+@media (max-width:560px){.qa summary{grid-template-columns:36px 1fr 24px;font-size:17px}.qa__a{padding-left:52px}}
 
-/* ---------- Privacy ---------- */
-.privacy .band{background:linear-gradient(160deg,var(--accent-strong),var(--accent));color:#fff;border-radius:var(--radius-lg);
-  padding:48px;box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
-:root[data-theme="dark"] .privacy .band{color:#04160b}
-@media (prefers-color-scheme:dark){:root:not([data-theme]) .privacy .band{color:#04160b}}
-.privacy .band::after{content:"";position:absolute;right:-60px;bottom:-60px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.10)}
-.privacy h2{font-size:clamp(26px,3.5vw,38px);max-width:18ch;color:inherit}
-.privacy .band p{margin-top:14px;max-width:52ch;opacity:.92;font-size:17px}
-.priv-list{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px;position:relative;z-index:1}
-.priv-list span{font-family:var(--mono);font-size:13px;background:rgba(255,255,255,.16);padding:7px 13px;border-radius:999px;font-weight:600}
-.privacy small{display:block;margin-top:22px;opacity:.8;font-size:13px;max-width:60ch}
+/* ============ PRIVACY (manifest) ============ */
+.manifest{border:1px solid var(--line-strong);background:var(--surface);padding:36px;font-family:var(--mono)}
+.manifest .mh{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:22px;display:flex;justify-content:space-between}
+.manifest h2{font-family:var(--serif);font-size:clamp(24px,3vw,34px);color:var(--ink);margin-bottom:16px;max-width:20ch;line-height:1.05}
+.manifest__body{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+.manifest__body p{font-family:var(--sans);color:var(--muted);font-size:15px;max-width:46ch}
+.mlist{list-style:none;display:flex;flex-direction:column;gap:2px}
+.mlist li{font-size:13px;color:var(--ink);letter-spacing:.03em;display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--line)}
+.mlist li::before{content:"✓";color:var(--accent);font-weight:700}
+.manifest small{font-family:var(--sans);display:block;margin-top:24px;color:var(--faint);font-size:12.5px;max-width:64ch}
+@media (max-width:720px){.manifest__body{grid-template-columns:1fr;gap:22px}}
 
-/* ---------- Footer ---------- */
-.foot{border-top:1px solid var(--border);padding:56px 0 40px;background:var(--surface)}
-.foot__grid{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;align-items:flex-start}
-.foot__tag{color:var(--muted);max-width:34ch;margin-top:12px;font-size:14px}
-.foot__cols{display:flex;gap:60px;flex-wrap:wrap}
-.foot__col h4{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
-.foot__col a{display:block;color:var(--muted);font-size:14px;padding:4px 0;transition:color .15s}
+/* ============ FOOTER ============ */
+.foot{border-top:1px solid var(--line-strong);padding:56px 0 40px}
+.foot__top{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:32px}
+.foot__brand p{font-family:var(--mono);font-size:12px;color:var(--muted);max-width:30ch;margin:14px 0 18px;line-height:1.7}
+.foot__col h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+.foot__col a{display:block;font-family:var(--mono);font-size:12.5px;color:var(--muted);padding:5px 0}
 .foot__col a:hover{color:var(--accent)}
-.foot__legal{margin-top:40px;padding-top:22px;border-top:1px solid var(--border);color:var(--faint);font-size:13px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.foot__legal{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--faint)}
+@media (max-width:720px){.foot__top{grid-template-columns:1fr 1fr}.foot__brand{grid-column:1/-1}}
 
-/* ---------- Toast ---------- */
-.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
-  background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:999px;box-shadow:var(--shadow-lg);
-  font-size:14px;font-weight:600;z-index:80;transition:opacity .25s,transform .25s;display:flex;gap:10px;align-items:center}
+/* ============ TOAST ============ */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(18px);opacity:0;pointer-events:none;
+  background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:12px;letter-spacing:.04em;
+  padding:12px 18px;z-index:90;transition:opacity .25s,transform .25s;display:flex;gap:10px;align-items:center;border-left:3px solid var(--accent)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast .tick{color:var(--accent-2)}
 </style>
 </head>
-<body>
+<body id="top">
 
 <!-- NAV -->
 <header class="nav">
   <div class="wrap nav__in">
-    <a class="brand" href="#top" aria-label="Bulk Image Downloader home">
-      <span class="brand__mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v9"/><path d="M8 9l4 4 4-4"/><path d="M6 18h12"/></svg></span>
-      <span>Bulk Image Downloader</span>
+    <a class="brand" href="#top">
+      <span class="brand__mk"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v9"/><path d="M8 9l4 4 4-4"/><path d="M6 18h12"/></svg></span>
+      <span>bulk_image_downloader<small>.ext</small></span>
     </a>
     <nav class="nav__links" aria-label="Primary">
       <a href="#try">Try it</a>
@@ -247,386 +278,282 @@ h1,h2,h3{line-height:1.1;letter-spacing:-.02em;text-wrap:balance;font-weight:800
       <a href="#privacy">Privacy</a>
     </nav>
     <div class="nav__right">
-      <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode">
+      <button class="tgl" id="themeToggle" aria-label="Toggle dark mode">
         <svg id="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg id="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
       </button>
-      <a class="btn btn--primary" href="#" data-cta>Add to Chrome — Free</a>
+      <a class="btn btn--fill" href="#" data-cta>Add to Chrome</a>
     </div>
   </div>
 </header>
-
-<main id="top">
 
 <!-- HERO -->
 <section class="hero">
   <div class="wrap hero__grid">
     <div class="hero__copy reveal">
-      <span class="eyebrow">Privacy-first · Chrome extension</span>
-      <h1>Save <span class="hl">every image</span> on a page. In one click.</h1>
-      <p class="lede">Finds every image — even lazy-loaded ones — lets you filter and de-duplicate them, then downloads them individually or as a ZIP. All on your device.</p>
+      <div class="hero__meta">
+        <span class="tick" aria-hidden="true"></span>
+        <span class="label">Chrome extension</span>
+        <span class="label" style="color:var(--faint)">v0.1 beta</span>
+        <span class="label label--accent">Local-first</span>
+      </div>
+      <h1>Every image on the page. <em>Yours in one pass.</em></h1>
+      <p class="hero__sub">Scan the whole document — lazy-loaded, CSS-background, shadow-DOM — then filter, de-duplicate, and pull what you pick as files or a ZIP. Nothing leaves your machine.</p>
+      <div class="readout"><span class="on">◉</span><span>SCAN COMPLETE</span><span style="color:var(--faint)">·</span><span><b class="num" id="heroCount">0</b> FRAMES</span><span style="color:var(--faint)">·</span><span class="num">12.4 MB</span></div>
       <div class="hero__cta">
-        <a class="btn btn--primary btn--lg" href="#" data-cta>Add to Chrome — Free</a>
-        <a class="btn btn--ghost btn--lg" href="#try">Try it below →</a>
+        <a class="btn btn--fill" href="#" data-cta>Add to Chrome — Free</a>
+        <a class="btn btn--line" href="#try">Run the demo ↓</a>
       </div>
-      <div class="proof">
-        <span class="stars" aria-hidden="true">★★★★★</span>
-        <span>Built for speed</span><span class="dot"></span>
-        <span>Works offline</span><span class="dot"></span>
-        <span>No account</span>
-      </div>
+      <div class="hero__proof"><span class="stars">★★★★★</span><span>Built for speed</span><span>·</span><span>Works offline</span><span>·</span><span>No account</span></div>
     </div>
 
     <div class="hero__art reveal">
-      <div class="win" aria-hidden="true">
-        <div class="win__bar">
-          <span class="b-brand"><span class="brand__mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v9"/><path d="M8 9l4 4 4-4"/><path d="M6 18h12"/></svg></span>Bulk Image Downloader</span>
-          <span class="pill">Beta</span>
-          <span class="win__meta">1,247 images · 12.4 MB</span>
-        </div>
-        <div class="win__body">
-          <div class="grid-imgs">
-            <div class="thumb sel"><div class="ph g1"></div><span class="chk"></span><span class="dim">1920×1280</span></div>
-            <div class="thumb sel"><div class="ph g2"></div><span class="chk"></span><span class="dim">1600×1067</span></div>
-            <div class="thumb sel"><div class="ph g3"></div><span class="chk"></span><span class="dim">2560×1707</span></div>
-            <div class="thumb"><div class="ph g4"></div><span class="chk"></span><span class="dim">1280×853</span></div>
-            <div class="thumb sel"><div class="ph g6"></div><span class="chk"></span><span class="dim">1600×1067</span></div>
-            <div class="thumb"><div class="ph g5"></div><span class="chk"></span><span class="dim">1920×1280</span></div>
-            <div class="thumb sel"><div class="ph g7"></div><span class="chk"></span><span class="dim">1024×683</span></div>
-            <div class="thumb"><div class="ph g8"></div><span class="chk"></span><span class="dim">1600×1067</span></div>
-          </div>
-        </div>
-        <div class="win__foot">
-          <span class="sel-label"><b>4 selected</b> · 3.1 MB</span>
-          <span class="btn btn--ghost grow" style="pointer-events:none">Download as ZIP</span>
-          <span class="btn btn--primary" style="pointer-events:none">Download selected</span>
+      <div class="sheet crop scan" id="sheet" aria-hidden="true">
+        <div class="sheet__cap"><span>Contact sheet — this page</span><span class="num">4 / 12 selected</span></div>
+        <div class="sheet__grid">
+          <div class="scanline"></div>
+          <div class="fr pick"><div class="ph p1"></div><span class="co">A1</span><span class="mk"></span></div>
+          <div class="fr pick"><div class="ph p2"></div><span class="co">A2</span><span class="mk"></span></div>
+          <div class="fr"><div class="ph p3"></div><span class="co">A3</span><span class="mk"></span></div>
+          <div class="fr pick"><div class="ph p4"></div><span class="co">A4</span><span class="mk"></span></div>
+          <div class="fr"><div class="ph p5"></div><span class="co">B1</span><span class="mk"></span></div>
+          <div class="fr"><div class="ph p6"></div><span class="co">B2</span><span class="mk"></span></div>
+          <div class="fr pick"><div class="ph p7"></div><span class="co">B3</span><span class="mk"></span></div>
+          <div class="fr"><div class="ph p8"></div><span class="co">B4</span><span class="mk"></span></div>
+          <div class="fr"><div class="ph p9"></div><span class="co">C1</span><span class="mk"></span></div>
+          <div class="fr"><div class="ph p10"></div><span class="co">C2</span><span class="mk"></span></div>
+          <div class="fr"><div class="ph p11"></div><span class="co">C3</span><span class="mk"></span></div>
+          <div class="fr"><div class="ph p12"></div><span class="co">C4</span><span class="mk"></span></div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="sec">
+  <div class="wrap">
+    <div class="sec__head reveal">
+      <span class="sec__idx">01</span>
+      <h2>Four steps, one keystroke apart.</h2>
+      <p>The whole pipeline runs in the page. No server, no round-trip.</p>
+    </div>
+    <div class="proc reveal">
+      <div class="proc__step"><div class="proc__n">01</div><h3>Scan</h3><p>Every image the page knows about, on-screen or not.</p><span class="arw">→</span></div>
+      <div class="proc__step"><div class="proc__n">02</div><h3>Filter</h3><p>Trim by size, type, domain, name or source.</p><span class="arw">→</span></div>
+      <div class="proc__step"><div class="proc__n">03</div><h3>Dedupe</h3><p>Group near-identical copies, keep the best.</p><span class="arw">→</span></div>
+      <div class="proc__step"><div class="proc__n">04</div><h3>Download</h3><p>Save the picks as files or a single ZIP.</p></div>
     </div>
   </div>
 </section>
 
 <!-- TRY IT -->
-<section class="section try" id="try">
+<section class="sec try" id="try">
   <div class="wrap">
-    <div class="section__head reveal" style="text-align:center;margin:0 auto 44px">
-      <span class="eyebrow">Try it — right here</span>
-      <h2>The real interface, on this page.</h2>
-      <p style="margin:0 auto">Click images to select them. Switch to <b>Duplicates</b> to see near-identical copies grouped, or <b>Unique</b> to keep one of each. The count and size update live.</p>
+    <div class="sec__head reveal">
+      <span class="sec__idx">02</span>
+      <h2>The instrument, live.</h2>
+      <p>Not a screenshot. Click frames to select; switch views to see duplicates grouped.</p>
     </div>
-
-    <div class="try__panel reveal">
-      <div class="win">
-        <div class="win__bar">
-          <span class="b-brand"><span class="brand__mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v9"/><path d="M8 9l4 4 4-4"/><path d="M6 18h12"/></svg></span>Bulk Image Downloader</span>
-          <span class="pill">Demo</span>
-          <span class="win__meta" id="demoMeta">8 images · 9.7 MB</span>
+    <div class="reveal">
+      <div class="inst">
+        <div class="inst__bar">
+          <span class="b"><span class="brand__mk"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v9"/><path d="M8 9l4 4 4-4"/><path d="M6 18h12"/></svg></span>bulk_image_downloader</span>
+          <span class="rt" id="instMeta">8 frames · 9.7 mb</span>
         </div>
-        <div class="win__body">
-          <div class="tabs" role="tablist">
-            <button class="tab is-active" data-view="all" role="tab" aria-selected="true">All <span class="c" id="cAll">8</span></button>
-            <button class="tab" data-view="dup" role="tab" aria-selected="false">Duplicates <span class="c" id="cDup">3</span></button>
-            <button class="tab" data-view="uniq" role="tab" aria-selected="false">Unique <span class="c" id="cUniq">6</span></button>
-          </div>
-          <div class="grid-imgs" id="demoGrid">
-            <!-- group A = {0,1,2} duplicates, group B = {3,4}, singles 5,6,7 -->
-            <div class="thumb sel" data-i="0" data-g="A" data-mb="1.9"><div class="ph g1"></div><span class="chk"></span><span class="dim">1920×1280</span><span class="keep">KEEP</span></div>
-            <div class="thumb" data-i="1" data-g="A" data-mb="1.2"><div class="ph g1"></div><span class="chk"></span><span class="dim">1280×853</span><span class="keep">KEEP</span></div>
-            <div class="thumb" data-i="2" data-g="A" data-mb="0.9"><div class="ph g1"></div><span class="chk"></span><span class="dim">1024×683</span><span class="keep">KEEP</span></div>
-            <div class="thumb sel" data-i="3" data-g="B" data-mb="1.6"><div class="ph g3"></div><span class="chk"></span><span class="dim">1600×1067</span><span class="keep">KEEP</span></div>
-            <div class="thumb" data-i="4" data-g="B" data-mb="1.1"><div class="ph g3"></div><span class="chk"></span><span class="dim">1200×800</span><span class="keep">KEEP</span></div>
-            <div class="thumb sel" data-i="5" data-g="" data-mb="1.4"><div class="ph g6"></div><span class="chk"></span><span class="dim">2048×1365</span></div>
-            <div class="thumb" data-i="6" data-g="" data-mb="0.8"><div class="ph g4"></div><span class="chk"></span><span class="dim">900×600</span></div>
-            <div class="thumb sel" data-i="7" data-g="" data-mb="0.8"><div class="ph g7"></div><span class="chk"></span><span class="dim">1024×683</span></div>
-          </div>
+        <div class="tabset" role="tablist">
+          <button class="tb on" data-view="all" role="tab" aria-selected="true">All <span class="n" id="nAll">8</span></button>
+          <button class="tb" data-view="dup" role="tab" aria-selected="false">Duplicates <span class="n" id="nDup">5</span></button>
+          <button class="tb" data-view="uniq" role="tab" aria-selected="false">Unique <span class="n" id="nUniq">5</span></button>
         </div>
-        <div class="win__foot">
-          <span class="sel-label" id="demoSel"><b>4 selected</b> · 5.7 MB</span>
-          <button class="btn btn--ghost grow" id="demoAll" style="margin-left:auto">Select all</button>
-          <button class="btn btn--ghost" id="demoClear">Clear</button>
-          <button class="btn btn--primary" id="demoDl">Download selected</button>
+        <div class="inst__grid" id="grid">
+          <div class="cell pick" data-i="0" data-g="A" data-mb="1.9"><div class="ph p1"></div><span class="mk"></span><span class="dm">1920×1280</span><span class="kp">keep</span></div>
+          <div class="cell" data-i="1" data-g="A" data-mb="1.2"><div class="ph p1"></div><span class="mk"></span><span class="dm">1280×853</span><span class="kp">keep</span></div>
+          <div class="cell" data-i="2" data-g="A" data-mb="0.9"><div class="ph p1"></div><span class="mk"></span><span class="dm">1024×683</span><span class="kp">keep</span></div>
+          <div class="cell pick" data-i="3" data-g="B" data-mb="1.6"><div class="ph p3"></div><span class="mk"></span><span class="dm">1600×1067</span><span class="kp">keep</span></div>
+          <div class="cell" data-i="4" data-g="B" data-mb="1.1"><div class="ph p3"></div><span class="mk"></span><span class="dm">1200×800</span><span class="kp">keep</span></div>
+          <div class="cell pick" data-i="5" data-g="" data-mb="1.4"><div class="ph p6"></div><span class="mk"></span><span class="dm">2048×1365</span></div>
+          <div class="cell" data-i="6" data-g="" data-mb="0.8"><div class="ph p9"></div><span class="mk"></span><span class="dm">900×600</span></div>
+          <div class="cell pick" data-i="7" data-g="" data-mb="0.8"><div class="ph p7"></div><span class="mk"></span><span class="dm">1024×683</span></div>
+        </div>
+        <div class="inst__foot">
+          <span class="out" id="instOut"><b>4</b> selected · <span class="num">5.7 MB</span></span>
+          <span class="grow">
+            <button class="btn btn--line" id="bAll">Select all</button>
+            <button class="btn btn--line" id="bClear">Clear</button>
+            <button class="btn btn--fill" id="bDl">Download ZIP</button>
+          </span>
         </div>
       </div>
-      <p class="hint">Nothing is downloaded — this is a live preview of the extension's UI.</p>
+      <p class="hint">// preview only — no files are written. the extension does the real thing.</p>
     </div>
   </div>
 </section>
 
 <!-- FEATURES -->
-<section class="section" id="features">
+<section class="sec" id="features">
   <div class="wrap">
-    <div class="section__head reveal">
-      <span class="eyebrow">Features</span>
-      <h2>Everything you need to grab images in bulk.</h2>
-      <p>The whole pipeline — scan, filter, de-duplicate, download — runs locally in your browser.</p>
+    <div class="sec__head reveal">
+      <span class="sec__idx">03</span>
+      <h2>Specification.</h2>
+      <p>Eight things it does, and nothing it doesn't.</p>
     </div>
-    <div class="feat-grid">
-      <div class="feat reveal">
-        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
-        <h3>Scan any page</h3>
-        <p>Finds &lt;img&gt;, srcset, CSS backgrounds, lazy-loaded and shadow-DOM images — not just what's on screen.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.5V19l4 2v-8.5L22 3z"/></svg></div>
-        <h3>Smart filters</h3>
-        <p>Narrow by size, file type, source domain, filename, or "only from this page" to skip third-party clutter.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/><path d="M11 7h4a2 2 0 0 1 2 2v4"/></svg></div>
-        <h3>Perceptual de-dupe</h3>
-        <p>A dHash fingerprint groups near-identical copies. Keep the largest of each, drop the rest — automatically.</p>
-        <span class="badge">On-device</span>
-      </div>
-      <div class="feat reveal">
-        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></div>
-        <h3>One-click ZIP</h3>
-        <p>Bundle your whole selection into a single archive — assembled in your browser, never on a server.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
-        <h3>Folder rules</h3>
-        <p>Auto-sort downloads into subfolders by domain, date or size with a simple rule builder.</p>
-        <span class="badge">Pro</span>
-      </div>
-      <div class="feat reveal">
-        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-        <h3>100% private</h3>
-        <p>No account, no uploads, no tracking. Anonymous usage stats are strictly opt-in and content-free.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg></div>
-        <h3>Fast &amp; offline</h3>
-        <p>Everything runs locally, so it's quick and works with no connection once the page has loaded.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.8 5.7 4 9-.2 3.3-1.5 6.5-4 9-2.5-2.5-3.8-5.7-4-9 .2-3.3 1.5-6.5 4-9z"/></svg></div>
-        <h3>Your language</h3>
-        <p>Ships in English, Español, Deutsch, Français and Português, matching your browser automatically.</p>
-      </div>
+    <div class="spec reveal">
+      <div class="spec__row"><div class="spec__k"><span class="no">01</span>Scan</div><div class="spec__v">Collects <b>&lt;img&gt;</b>, <b>srcset</b>, CSS backgrounds, lazy-loaded and shadow-DOM images — the whole page, not just the viewport.</div><div></div></div>
+      <div class="spec__row"><div class="spec__k"><span class="no">02</span>Filter</div><div class="spec__v">Narrow by <b>size</b>, <b>type</b>, <b>source domain</b>, <b>filename</b>, or "only from this page" to drop third-party clutter.</div><div></div></div>
+      <div class="spec__row"><div class="spec__k"><span class="no">03</span>Dedupe</div><div class="spec__v">A <b>64-bit dHash</b> fingerprint groups near-identical copies. Keep the largest of each, discard the rest.</div><div class="spec__tag">On-device</div></div>
+      <div class="spec__row"><div class="spec__k"><span class="no">04</span>Package</div><div class="spec__v">Bundle a selection into one <b>ZIP</b>, assembled in the browser — with live progress, cancel and retry.</div><div></div></div>
+      <div class="spec__row"><div class="spec__k"><span class="no">05</span>Route</div><div class="spec__v">Auto-sort downloads into subfolders by <b>domain</b>, <b>date</b> or <b>size</b> with a rule builder.</div><div class="spec__tag">Pro</div></div>
+      <div class="spec__row"><div class="spec__k"><span class="no">06</span>Privacy</div><div class="spec__v">No account, no uploads, no tracking. Usage stats are <b>strictly opt-in</b> and carry no content.</div><div></div></div>
+      <div class="spec__row"><div class="spec__k"><span class="no">07</span>Speed</div><div class="spec__v">All processing is local, so it's fast and keeps working <b>offline</b> once a page has loaded.</div><div></div></div>
+      <div class="spec__row"><div class="spec__k"><span class="no">08</span>Locale</div><div class="spec__v">Ships in <b>English, Español, Deutsch, Français, Português</b>, matching your browser automatically.</div><div></div></div>
     </div>
   </div>
 </section>
 
 <!-- BLOG -->
-<section class="section" id="blog" style="background:var(--surface-2)">
+<section class="sec try" id="blog">
   <div class="wrap">
-    <div class="section__head reveal">
-      <span class="eyebrow">Blog</span>
-      <h2>From the workshop.</h2>
-      <p>Notes on how the extension works, and how to use it well.</p>
+    <div class="sec__head reveal">
+      <span class="sec__idx">04</span>
+      <h2>Field notes.</h2>
+      <p>How the thing works, and how to use it well.</p>
     </div>
-    <div class="blog-grid">
-      <article class="post reveal">
-        <div class="post__cover g2"></div>
-        <div class="post__body">
-          <span class="post__tag">How it works</span>
-          <h3>How perceptual hashing spots duplicate images</h3>
-          <p>A plain-English tour of dHash and Hamming distance — how a 64-bit fingerprint tells two near-identical photos apart from two different ones.</p>
-          <div class="post__meta"><span>6 min read</span><span>·</span><a class="readmore" href="#">Read →</a></div>
-        </div>
+    <div class="notes reveal">
+      <article class="note" data-cta>
+        <div class="note__date">2026·03·14</div>
+        <div class="note__main"><span class="tag">Under the hood</span><h3>How perceptual hashing spots a duplicate</h3><p>A plain-English tour of dHash and Hamming distance — how a 64-bit fingerprint tells two near-identical photos apart from two different ones.</p></div>
+        <div class="note__rt">6 min</div>
       </article>
-      <article class="post reveal">
-        <div class="post__cover g3"></div>
-        <div class="post__body">
-          <span class="post__tag">Guide</span>
-          <h3>Downloading images responsibly</h3>
-          <p>Rate limits, copyright, and being a good web citizen when you save a lot of images at once — a short, practical checklist.</p>
-          <div class="post__meta"><span>4 min read</span><span>·</span><a class="readmore" href="#">Read →</a></div>
-        </div>
+      <article class="note" data-cta>
+        <div class="note__date">2026·02·28</div>
+        <div class="note__main"><span class="tag">Guide</span><h3>Downloading images responsibly</h3><p>Rate limits, copyright, and being a good web citizen when you pull a few hundred images at once — a short, practical checklist.</p></div>
+        <div class="note__rt">4 min</div>
       </article>
-      <article class="post reveal">
-        <div class="post__cover g1"></div>
-        <div class="post__body">
-          <span class="post__tag">Privacy</span>
-          <h3>What a privacy-first extension can (and can't) see</h3>
-          <p>Our permission model in your words: active-tab only, why we ask for one optional permission, and what "on-device" really means.</p>
-          <div class="post__meta"><span>5 min read</span><span>·</span><a class="readmore" href="#">Read →</a></div>
-        </div>
+      <article class="note" data-cta>
+        <div class="note__date">2026·02·09</div>
+        <div class="note__main"><span class="tag">Privacy</span><h3>What a local-first extension can (and can't) see</h3><p>Our permission model in your words: active-tab only, why we ask for one optional grant, and what "on-device" actually means.</p></div>
+        <div class="note__rt">5 min</div>
       </article>
     </div>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="section" id="faq">
+<section class="sec" id="faq">
   <div class="wrap">
-    <div class="section__head reveal" style="text-align:center;margin:0 auto 44px">
-      <span class="eyebrow">FAQ</span>
-      <h2>Questions, answered.</h2>
+    <div class="sec__head reveal">
+      <span class="sec__idx">05</span>
+      <h2>Questions.</h2>
     </div>
     <div class="faq reveal">
-      <details class="qa" open><summary>Is it free?<span class="plus"></span></summary><div class="qa__a">Yes. Every feature is unlocked during the beta, with no paywall and no feature gating. Some power features (like folder rules) are marked "Pro" for the future, but they're open to everyone right now.</div></details>
-      <details class="qa"><summary>Do you see my images?<span class="plus"></span></summary><div class="qa__a">No. Scanning, de-duplication and ZIP building all happen entirely on your device. Nothing is uploaded to us or anyone else — the extension has no server to send images to.</div></details>
-      <details class="qa"><summary>Which pages does it work on?<span class="plus"></span></summary><div class="qa__a">Any normal web page. Browser internal pages and the Chrome Web Store are off-limits to every extension, so scanning is disabled there — that's a browser rule, not our choice.</div></details>
-      <details class="qa"><summary>Where do my downloads go?<span class="plus"></span></summary><div class="qa__a">Straight into your browser's Downloads folder — the same place every other download lands. With folder rules you can route them into tidy subfolders by domain, date or size.</div></details>
-      <details class="qa"><summary>How does duplicate detection work?<span class="plus"></span></summary><div class="qa__a">Each image gets a tiny perceptual fingerprint (a 64-bit dHash). Images whose fingerprints are close are grouped as near-duplicates, and you choose which copy to keep — usually the largest.</div></details>
-      <details class="qa"><summary>What permissions does it need?<span class="plus"></span></summary><div class="qa__a">Just the active tab, and only when you click the icon. To fetch images from servers that block cross-origin requests, it can ask for one optional "all sites" permission — but only if some images need it, and only with your say-so.</div></details>
+      <details class="qa" open><summary><span class="qn">Q1</span><span>Is it free?</span><span class="pm"></span></summary><div class="qa__a">Yes — every feature is unlocked during the beta, with no paywall and no gating. A few power features are marked "Pro" for later, but they're open to everyone right now.</div></details>
+      <details class="qa"><summary><span class="qn">Q2</span><span>Do you see my images?</span><span class="pm"></span></summary><div class="qa__a">No. Scanning, de-duplication and ZIP building happen entirely on your device. There is no server to send images to.</div></details>
+      <details class="qa"><summary><span class="qn">Q3</span><span>Which pages does it work on?</span><span class="pm"></span></summary><div class="qa__a">Any normal web page. Browser-internal pages and the Chrome Web Store are off-limits to every extension — that's a browser rule, not our choice.</div></details>
+      <details class="qa"><summary><span class="qn">Q4</span><span>Where do downloads go?</span><span class="pm"></span></summary><div class="qa__a">Into your browser's Downloads folder, like any other download — or tidy subfolders, if you set up folder rules.</div></details>
+      <details class="qa"><summary><span class="qn">Q5</span><span>How does dedupe work?</span><span class="pm"></span></summary><div class="qa__a">Each image gets a tiny 64-bit perceptual fingerprint. Images with close fingerprints are grouped, and you choose which copy to keep — usually the largest.</div></details>
+      <details class="qa"><summary><span class="qn">Q6</span><span>What permissions does it need?</span><span class="pm"></span></summary><div class="qa__a">Just the active tab, only when you click the icon. To fetch images from servers that block cross-origin requests, it can ask for one optional "all sites" grant — but only if some images need it, and only with your say-so.</div></details>
     </div>
   </div>
 </section>
 
 <!-- PRIVACY -->
-<section class="section privacy" id="privacy">
+<section class="sec try" id="privacy">
   <div class="wrap reveal">
-    <div class="band">
-      <span class="eyebrow" style="color:inherit;opacity:.85">Privacy</span>
-      <h2>Your images never leave your device.</h2>
-      <p>There's no account to create and no server to phone home to. The extension reads a page only when you click it, does all its work locally, and forgets everything when you close the tab.</p>
-      <div class="priv-list">
-        <span>No uploads</span><span>No tracking</span><span>No account</span><span>On-device processing</span><span>Opt-in analytics</span>
+    <div class="manifest crop">
+      <div class="mh"><span>Privacy manifest</span><span>signed · theopenbox</span></div>
+      <div class="manifest__body">
+        <div>
+          <h2>Your images never leave your device.</h2>
+          <p>No account to create, no server to phone home to. The extension reads a page only when you click it, does its work locally, and forgets everything when the tab closes.</p>
+          <small>Optional usage stats, if you switch them on, are anonymous and content-free — counts and feature names only, never URLs, filenames or image data.</small>
+        </div>
+        <ul class="mlist">
+          <li>No uploads</li>
+          <li>No tracking</li>
+          <li>No account</li>
+          <li>On-device processing</li>
+          <li>Active-tab, on click</li>
+          <li>Opt-in analytics, off by default</li>
+        </ul>
       </div>
-      <small>Optional usage stats, if you turn them on, are anonymous and content-free — counts and feature names only, never URLs, filenames or image data.</small>
     </div>
   </div>
 </section>
 
-</main>
-
 <!-- FOOTER -->
 <footer class="foot">
   <div class="wrap">
-    <div class="foot__grid">
-      <div>
-        <a class="brand" href="#top">
-          <span class="brand__mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v9"/><path d="M8 9l4 4 4-4"/><path d="M6 18h12"/></svg></span>
-          <span>Bulk Image Downloader</span>
-        </a>
-        <p class="foot__tag">Local-first · no account · your images never leave your device.</p>
-        <a class="btn btn--primary" href="#" data-cta style="margin-top:18px">Add to Chrome — Free</a>
+    <div class="foot__top">
+      <div class="foot__brand">
+        <a class="brand" href="#top"><span class="brand__mk"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v9"/><path d="M8 9l4 4 4-4"/><path d="M6 18h12"/></svg></span><span>bulk_image_downloader</span></a>
+        <p>Local-first · no account · your images never leave your device.</p>
+        <a class="btn btn--fill" href="#" data-cta>Add to Chrome — Free</a>
       </div>
-      <div class="foot__cols">
-        <div class="foot__col">
-          <h4>Product</h4>
-          <a href="#try">Try it</a>
-          <a href="#features">Features</a>
-          <a href="#privacy">Privacy</a>
-        </div>
-        <div class="foot__col">
-          <h4>Resources</h4>
-          <a href="#blog">Blog</a>
-          <a href="#faq">FAQ</a>
-          <a href="https://github.com/yassudicoder/Bulk-Image-Downloader">Source</a>
-        </div>
-        <div class="foot__col">
-          <h4>Contact</h4>
-          <a href="mailto:hello@theopenbox.dev">hello@theopenbox.dev</a>
-        </div>
-      </div>
+      <div class="foot__col"><h4>Product</h4><a href="#try">Try it</a><a href="#features">Features</a><a href="#privacy">Privacy</a></div>
+      <div class="foot__col"><h4>Notes</h4><a href="#blog">Blog</a><a href="#faq">FAQ</a><a href="https://github.com/yassudicoder/Bulk-Image-Downloader">Source</a></div>
+      <div class="foot__col"><h4>Contact</h4><a href="mailto:hello@theopenbox.dev">hello@theopenbox.dev</a></div>
     </div>
-    <div class="foot__legal">
-      <span>© 2026 Bulk Image Downloader by TheOpenBox</span>
-      <span class="mono">Made for people who grab a lot of images.</span>
-    </div>
+    <div class="foot__legal"><span>© 2026 TheOpenBox</span><span>Made for people who grab a lot of images.</span></div>
   </div>
 </footer>
 
-<div class="toast" id="toast"><span class="tick">✓</span><span id="toastMsg">Saved</span></div>
+<div class="toast" id="toast"><span id="toastMsg">ok</span></div>
 
 <script>
 (function(){
   "use strict";
-  var root=document.documentElement;
+  var root=document.documentElement, reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* Theme toggle */
-  try{ var saved=localStorage.getItem("bid-site-theme"); if(saved) root.setAttribute("data-theme",saved); }catch(e){}
-  function effective(){ var t=root.getAttribute("data-theme"); if(t) return t;
-    return matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"; }
+  /* theme */
+  try{var s=localStorage.getItem("bid-theme");if(s)root.setAttribute("data-theme",s);}catch(e){}
+  function eff(){var t=root.getAttribute("data-theme");return t||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");}
   document.getElementById("themeToggle").addEventListener("click",function(){
-    var next=effective()==="dark"?"light":"dark";
-    root.setAttribute("data-theme",next);
-    try{ localStorage.setItem("bid-site-theme",next); }catch(e){}
-  });
+    var n=eff()==="dark"?"light":"dark";root.setAttribute("data-theme",n);try{localStorage.setItem("bid-theme",n);}catch(e){}});
 
-  /* Scroll reveal */
-  var reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if(!reduce && "IntersectionObserver" in window){
-    var io=new IntersectionObserver(function(es){es.forEach(function(en){
-      if(en.isIntersecting){en.target.classList.add("in");io.unobserve(en.target);}});},{threshold:.12});
+  /* reveal */
+  if(!reduce&&"IntersectionObserver"in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("in");io.unobserve(en.target);}});},{threshold:.12});
     document.querySelectorAll(".reveal").forEach(function(el){io.observe(el);});
-  } else { document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("in");}); }
+  }else{document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("in");});}
 
-  /* Toast */
-  var toast=document.getElementById("toast"),toastMsg=document.getElementById("toastMsg"),tt;
-  function showToast(m){ toastMsg.textContent=m; toast.classList.add("show");
-    clearTimeout(tt); tt=setTimeout(function(){toast.classList.remove("show");},2600); }
+  /* hero counter tick-up */
+  var hc=document.getElementById("heroCount"),target=1247;
+  if(reduce){hc.textContent="1,247";}
+  else{var t0=null;requestAnimationFrame(function step(ts){if(!t0)t0=ts;var k=Math.min(1,(ts-t0)/1100);var v=Math.round((1-Math.pow(1-k,3))*target);hc.textContent=v.toLocaleString();if(k<1)requestAnimationFrame(step);});}
 
-  /* Interactive demo */
-  var grid=document.getElementById("demoGrid");
-  var thumbs=[].slice.call(grid.querySelectorAll(".thumb"));
-  var view="all";
+  /* toast */
+  var toast=document.getElementById("toast"),tmsg=document.getElementById("toastMsg"),tt;
+  function say(m){tmsg.textContent=m;toast.classList.add("show");clearTimeout(tt);tt=setTimeout(function(){toast.classList.remove("show");},2400);}
 
-  function largestPerGroup(){
-    // biggest data-mb within each non-empty group is the "keeper"
-    var best={};
-    thumbs.forEach(function(t){ var g=t.dataset.g; if(!g) return; var mb=parseFloat(t.dataset.mb);
-      if(!best[g]||mb>parseFloat(best[g].dataset.mb)) best[g]=t; });
-    return best;
-  }
-  function visibleThumbs(){
-    var best=largestPerGroup();
-    return thumbs.filter(function(t){
-      var g=t.dataset.g;
-      if(view==="all") return true;
-      if(view==="dup") return !!g;                 // members of any duplicate group
-      if(view==="uniq") return !g || best[g]===t;  // singles + one keeper per group
-      return true;
-    });
-  }
-  function render(){
-    var best=largestPerGroup();
-    thumbs.forEach(function(t){ t.style.display="none"; t.classList.remove("keep-badge"); });
-    visibleThumbs().forEach(function(t){
-      t.style.display="";
-      if(view!=="all" && t.dataset.g && best[t.dataset.g]===t) t.classList.add("keep-badge");
-    });
-    updateFoot();
-    updateTabs();
-  }
-  function updateTabs(){
-    var best=largestPerGroup();
-    var all=thumbs.length;
-    var dup=thumbs.filter(function(t){return !!t.dataset.g;}).length;
-    var uniq=thumbs.filter(function(t){return !t.dataset.g || best[t.dataset.g]===t;}).length;
-    document.getElementById("cAll").textContent=all;
-    document.getElementById("cDup").textContent=dup;
-    document.getElementById("cUniq").textContent=uniq;
-    var totMb=0; thumbs.forEach(function(t){totMb+=parseFloat(t.dataset.mb);});
-    document.getElementById("demoMeta").textContent=all+" images · "+totMb.toFixed(1)+" MB";
-  }
-  function updateFoot(){
-    var sel=visibleThumbs().filter(function(t){return t.classList.contains("sel");});
-    var mb=sel.reduce(function(a,t){return a+parseFloat(t.dataset.mb);},0);
-    document.getElementById("demoSel").innerHTML="<b>"+sel.length+" selected</b> · "+mb.toFixed(1)+" MB";
-  }
-  grid.addEventListener("click",function(e){
-    var t=e.target.closest(".thumb"); if(!t) return;
-    t.classList.toggle("sel"); updateFoot();
-  });
-  document.querySelectorAll(".try .tab").forEach(function(tab){
-    tab.addEventListener("click",function(){
-      document.querySelectorAll(".try .tab").forEach(function(x){x.classList.remove("is-active");x.setAttribute("aria-selected","false");});
-      tab.classList.add("is-active"); tab.setAttribute("aria-selected","true");
-      view=tab.dataset.view; render();
-    });
-  });
-  document.getElementById("demoAll").addEventListener("click",function(){
-    visibleThumbs().forEach(function(t){t.classList.add("sel");}); updateFoot();
-  });
-  document.getElementById("demoClear").addEventListener("click",function(){
-    thumbs.forEach(function(t){t.classList.remove("sel");}); updateFoot();
-  });
-  document.getElementById("demoDl").addEventListener("click",function(){
-    var n=visibleThumbs().filter(function(t){return t.classList.contains("sel");}).length;
-    showToast(n?("Would save "+n+" image"+(n>1?"s":"")+" — demo only"):"Select some images first");
-  });
+  /* demo instrument */
+  var grid=document.getElementById("grid"),cells=[].slice.call(grid.querySelectorAll(".cell")),view="all";
+  function best(){var b={};cells.forEach(function(c){var g=c.dataset.g;if(!g)return;if(!b[g]||parseFloat(c.dataset.mb)>parseFloat(b[g].dataset.mb))b[g]=c;});return b;}
+  function visible(){var b=best();return cells.filter(function(c){var g=c.dataset.g;if(view==="all")return true;if(view==="dup")return !!g;return !g||b[g]===c;});}
+  function draw(){var b=best();cells.forEach(function(c){c.style.display="none";c.classList.remove("keep");});
+    visible().forEach(function(c){c.style.display="";if(view!=="all"&&c.dataset.g&&b[c.dataset.g]===c)c.classList.add("keep");});
+    counts();foot();}
+  function counts(){var b=best();document.getElementById("nAll").textContent=cells.length;
+    document.getElementById("nDup").textContent=cells.filter(function(c){return !!c.dataset.g;}).length;
+    document.getElementById("nUniq").textContent=cells.filter(function(c){return !c.dataset.g||b[c.dataset.g]===c;}).length;
+    var mb=0;cells.forEach(function(c){mb+=parseFloat(c.dataset.mb);});
+    document.getElementById("instMeta").textContent=cells.length+" frames · "+mb.toFixed(1)+" mb";}
+  function foot(){var s=visible().filter(function(c){return c.classList.contains("pick");});
+    var mb=s.reduce(function(a,c){return a+parseFloat(c.dataset.mb);},0);
+    document.getElementById("instOut").innerHTML="<b>"+s.length+"</b> selected · <span class='num'>"+mb.toFixed(1)+" MB</span>";}
+  grid.addEventListener("click",function(e){var c=e.target.closest(".cell");if(!c)return;c.classList.toggle("pick");foot();});
+  document.querySelectorAll(".tb").forEach(function(tb){tb.addEventListener("click",function(){
+    document.querySelectorAll(".tb").forEach(function(x){x.classList.remove("on");x.setAttribute("aria-selected","false");});
+    tb.classList.add("on");tb.setAttribute("aria-selected","true");view=tb.dataset.view;draw();});});
+  document.getElementById("bAll").addEventListener("click",function(){visible().forEach(function(c){c.classList.add("pick");});foot();});
+  document.getElementById("bClear").addEventListener("click",function(){cells.forEach(function(c){c.classList.remove("pick");});foot();});
+  document.getElementById("bDl").addEventListener("click",function(){var n=visible().filter(function(c){return c.classList.contains("pick");}).length;
+    say(n?("packaging "+n+" image"+(n>1?"s":"")+" — preview only"):"select some frames first");});
 
-  /* CTA buttons (no store listing yet) */
-  document.querySelectorAll("[data-cta]").forEach(function(b){
-    b.addEventListener("click",function(e){ e.preventDefault();
-      showToast("Coming soon to the Chrome Web Store"); });
-  });
+  /* CTA */
+  document.querySelectorAll("[data-cta]").forEach(function(b){b.addEventListener("click",function(e){e.preventDefault();say("coming soon to the chrome web store");});});
 
-  render();
+  draw();
 })();
 </script>
 </body>
