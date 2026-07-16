@@ -37,9 +37,10 @@
   }
 
   /** Fetch one URL -> { bytes:Uint8Array, contentType:string }. Throws on any failure. */
-  async function fetchOne(url) {
+  async function fetchOne(url, signal) {
     // credentials omitted (don't leak cookies); force-cache reuses the just-loaded image.
-    const resp = await fetch(url, { credentials: 'omit', cache: 'force-cache', redirect: 'follow' });
+    // `signal` lets a caller (e.g. ZIP Cancel) abort the transfer in flight, not just between items.
+    const resp = await fetch(url, { credentials: 'omit', cache: 'force-cache', redirect: 'follow', signal });
     if (!resp || !resp.ok) throw new Error('http_' + (resp ? resp.status : 'null'));
     const buf = await resp.arrayBuffer();
     return { bytes: new Uint8Array(buf), contentType: resp.headers.get('content-type') || '' };
@@ -67,7 +68,7 @@
         if (signal && signal.aborted) return;
         const item = items[cursor++];
         try {
-          const { bytes, contentType } = await fetchOne(item.url);
+          const { bytes, contentType } = await fetchOne(item.url, signal);
           ok.push({ item, bytes, contentType });
           bytesSoFar += bytes.length;
         } catch (e) {

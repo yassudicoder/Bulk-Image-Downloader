@@ -160,7 +160,9 @@
     let view = base;
     if (dedupeComputed) {
       if (dupView === 'unique') view = collapseDuplicates(base);
-      else if (dupView === 'dup') view = base.filter((c) => c._dupGroup != null);
+      // Only members of surviving groups (>=2 after filtering) — matches the rendered cards,
+      // so a group filtered down to a lone survivor doesn't count or get Select-All'd invisibly.
+      else if (dupView === 'dup') view = dupMembers(base);
     }
     filtered = sortFiltered(view, currentSort());
     filterCount.textContent = t('filterShownOfTotal', [String(filtered.length), String(candidates.length)]);
@@ -277,6 +279,7 @@
     if (!candidates.length) {
       gridScroll.hidden = true;
       if (dupBar) dupBar.hidden = true;
+      if (dupGroups) { dupGroups.hidden = true; dupGroups.textContent = ''; }
       emptyState.hidden = false;
       return;
     }
@@ -291,6 +294,8 @@
   function showError(bodyKey) {
     gridScroll.hidden = true;
     emptyState.hidden = true;
+    const dupBar = $('dupBar'); if (dupBar) dupBar.hidden = true;
+    if (dupGroups) { dupGroups.hidden = true; dupGroups.textContent = ''; }
     errorState.hidden = false;
     document.getElementById('errorBody').textContent = t(bodyKey);
     downloadBtn.disabled = true;
@@ -391,12 +396,26 @@
   }
 
   // --- ZIP progress panel ----------------------------------------------------
+  let zipLastFocus = null;   // element to restore focus to when the modal closes
+
+  // The panel is a real modal (aria-modal): make the rest of the app inert while it's open, so
+  // Tab is contained and assistive tech treats the background as unavailable.
+  function setAppInert(on) {
+    ['.bid-header', '.bid-body', '.bid-footer'].forEach((sel) => {
+      const el = document.querySelector(sel);
+      if (!el) return;
+      if (on) el.setAttribute('inert', ''); else el.removeAttribute('inert');
+    });
+  }
+  function focusZip(id) { const el = $(id); if (el) { try { el.focus(); } catch (_) {} } }
+
   function setZipBar(pct) {
     const fill = $('zipBarFill'); if (fill) fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
     const p = $('zipStatPct'); if (p) p.textContent = Math.round(Math.max(0, Math.min(100, pct))) + '%';
   }
   function showZipPanel(total) {
     const panel = $('zipPanel'); if (!panel) return;
+    const alreadyOpen = !panel.hidden;
     panel.hidden = false;
     panel.classList.remove('is-error', 'is-indeterminate');
     $('zipPanelTitle').textContent = t('zipPanelPackaging');
@@ -406,6 +425,11 @@
     $('zipRetryBtn').hidden = true;
     $('zipCloseBtn').hidden = true;
     $('zipCancelBtn').hidden = false;
+    if (!alreadyOpen) {                         // first open: capture focus + trap in the dialog
+      zipLastFocus = document.activeElement;
+      setAppInert(true);
+    }
+    focusZip('zipCancelBtn');
   }
   function updateZipProgress(done, total, bytes) {
     const panel = $('zipPanel'); if (!panel || panel.hidden) return;
@@ -420,6 +444,8 @@
     $('zipPanelTitle').textContent = t('zipPanelCompressing');
     $('zipStatNote').textContent = t('zipPanelCompressing');
     const p = $('zipStatPct'); if (p) p.textContent = '';
+    // Fetching is done — the compress/save phase can't be cancelled, so drop the Cancel affordance.
+    $('zipCancelBtn').hidden = true;
   }
   function zipPanelDone(count, errored, bytes) {
     const panel = $('zipPanel'); if (!panel) return;
@@ -440,9 +466,11 @@
       $('zipStatNote').textContent = t('zipPanelSavedNote');
       retry.hidden = true;
     }
+    focusZip('zipCloseBtn');   // land keyboard focus on the only remaining action
   }
   function zipPanelError(msg) {
     const panel = $('zipPanel'); if (!panel) return;
+    const wasOpen = !panel.hidden;
     panel.hidden = false;
     panel.classList.add('is-error');
     panel.classList.remove('is-indeterminate');
@@ -453,8 +481,16 @@
     $('zipCancelBtn').hidden = true;
     $('zipRetryBtn').hidden = true;
     $('zipCloseBtn').hidden = false;
+    if (!wasOpen) { zipLastFocus = document.activeElement; setAppInert(true); }
+    focusZip('zipCloseBtn');
   }
-  function hideZipPanel() { const p = $('zipPanel'); if (p) p.hidden = true; }
+  function hideZipPanel() {
+    const p = $('zipPanel'); if (!p) return;
+    p.hidden = true;
+    setAppInert(false);
+    if (zipLastFocus && zipLastFocus.focus) { try { zipLastFocus.focus(); } catch (_) {} }
+    zipLastFocus = null;
+  }
 
   // Persistent toast with Grant / Skip. The Grant handler calls requestAllUrls()
   // inside the click so the permission request stays within a user gesture.
@@ -651,6 +687,14 @@
     return groups;
   }
 
+  // Flattened members of surviving duplicate groups — the single source of truth for what the
+  // Duplicates tab shows, counts, and selects, so the badge/footer never disagree with the cards.
+  function dupMembers(base) {
+    const out = [];
+    for (const g of groupsFrom(base)) for (const c of g) out.push(c);
+    return out;
+  }
+
   function renderDupGroups(base) {
     if (!dupGroups) return;
     const groups = groupsFrom(base);
@@ -674,11 +718,15 @@
   function buildGroupCard(members, gi) {
     const card = document.createElement('div');
     card.className = 'bid-dupgroup';
+    const titleId = 'bid-dupg-' + gi;
+    card.setAttribute('role', 'group');
+    card.setAttribute('aria-labelledby', titleId);
 
     const head = document.createElement('div');
     head.className = 'bid-dupgroup__head';
     const title = document.createElement('span');
     title.className = 'bid-dupgroup__title';
+    title.id = titleId;
     title.textContent = t('dupGroupTitle', String(gi + 1));
     const count = document.createElement('span');
     count.className = 'bid-dupgroup__count';
@@ -687,6 +735,8 @@
     best.type = 'button';
     best.className = 'bid-btn bid-btn--sm bid-dupgroup__best';
     best.textContent = t('dupGroupKeepBest');
+    // Distinct accessible name so screen-reader users know which group each button acts on.
+    best.setAttribute('aria-label', t('dupGroupKeepBestFor', String(gi + 1)));
     best.addEventListener('click', () => keepBest(members, card));
     head.append(title, count, best);
 
@@ -748,7 +798,7 @@
     const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
     set('tabCountAll', String(base.length));
     if (dedupeComputed) {
-      set('tabCountDup', String(base.filter((c) => c._dupGroup != null).length));
+      set('tabCountDup', String(dupMembers(base).length));
       set('tabCountUnique', String(collapseDuplicates(base).length));
     } else {
       set('tabCountDup', '');
@@ -834,6 +884,13 @@
     if (zipCancel) zipCancel.addEventListener('click', () => { if (zipAbort) zipAbort.abort(); hideZipPanel(); });
     const zipClose = $('zipCloseBtn');
     if (zipClose) zipClose.addEventListener('click', hideZipPanel);
+    const zipPanel = $('zipPanel');
+    if (zipPanel) zipPanel.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      if (!$('zipCancelBtn').hidden) { if (zipAbort) zipAbort.abort(); hideZipPanel(); }
+      else if (!$('zipCloseBtn').hidden) { hideZipPanel(); }
+    });
 
     setupDupControls();
 

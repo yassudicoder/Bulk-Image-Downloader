@@ -161,7 +161,7 @@ body {
 .bid-dupitem.is-selected::after { background: var(--bid-accent); border-color: var(--bid-accent); }
 .bid-dupitem.is-selected::before {
   content: ""; position: absolute; top: 7px; right: 10px; z-index: 3;
-  width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
+  width: 4px; height: 8px; border: solid var(--bid-accent-fg); border-width: 0 2px 2px 0; transform: rotate(45deg);
 }
 
 /* Virtualized grid -------------------------------------------------------- */
@@ -207,7 +207,7 @@ body {
 .bid-cell__check:checked { background: var(--bid-accent); border-color: var(--bid-accent); }
 .bid-cell__check:checked::after {
   content: ""; position: absolute; left: 7px; top: 3px;
-  width: 5px; height: 10px; border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
+  width: 5px; height: 10px; border: solid var(--bid-accent-fg); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
 }
 .bid-cell__check:focus-visible { outline: none; box-shadow: var(--bid-focus-ring); }
 

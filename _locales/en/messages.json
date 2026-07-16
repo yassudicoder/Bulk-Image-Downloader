@@ -162,6 +162,11 @@
   },
   "dupGroupCopiesOne": { "message": "1 copy", "description": "Singular member count of a duplicate group." },
   "dupGroupKeepBest": { "message": "Keep best", "description": "Button: select the largest copy and deselect the rest of the group." },
+  "dupGroupKeepBestFor": {
+    "message": "Keep best in Group $n$",
+    "description": "Accessible label for a group's Keep-best button.",
+    "placeholders": { "n": { "content": "$1", "example": "1" } }
+  },
   "dupGroupKeep": { "message": "Keep", "description": "Badge marking the recommended (largest) copy in a group." },
   "filterOnlyThisPage": { "message": "Only from this page", "description": "Filter toggle: images hosted on the scanned site only." },
   "filterOnlyThisPageHint": { "message": "Show only images hosted on this site — hides third-party / CDN images.", "description": "Tooltip for the only-this-page filter." },
