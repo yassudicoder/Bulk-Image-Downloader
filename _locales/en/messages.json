@@ -240,6 +240,32 @@
   "zipGrantBtn": { "message": "Grant access", "description": "Requests the optional all-sites permission to fetch blocked images." },
   "zipSkipBtn": { "message": "Skip them", "description": "Declines the permission and zips only what was fetched." },
   "zipFailed": { "message": "Couldn't create the ZIP.", "description": "ZIP failed unexpectedly." },
+  "zipPanelPackaging": { "message": "Preparing ZIP…", "description": "ZIP panel title while fetching images." },
+  "zipPanelCompressing": { "message": "Compressing…", "description": "ZIP panel title/note while building the archive." },
+  "zipPanelDone": { "message": "ZIP saved", "description": "ZIP panel title on success." },
+  "zipPanelFailedTitle": { "message": "Couldn't create the ZIP", "description": "ZIP panel title on failure." },
+  "zipPanelBgNote": { "message": "This runs here in the page — keep it open until it finishes.", "description": "ZIP panel note while running." },
+  "zipPanelSavedNote": { "message": "Your ZIP is in your Downloads.", "description": "ZIP panel note on full success." },
+  "zipPanelCount": {
+    "message": "$done$ / $total$ images",
+    "description": "ZIP panel progress count.",
+    "placeholders": { "done": { "content": "$1", "example": "108" }, "total": { "content": "$2", "example": "124" } }
+  },
+  "zipPanelSaved": {
+    "message": "$count$ images · $size$",
+    "description": "ZIP panel summary of what was saved.",
+    "placeholders": { "count": { "content": "$1", "example": "120" }, "size": { "content": "$2", "example": "216 MB" } }
+  },
+  "zipPanelPartial": {
+    "message": "$count$ images couldn't be fetched.",
+    "description": "ZIP panel note when some images failed.",
+    "placeholders": { "count": { "content": "$1", "example": "4" } }
+  },
+  "zipRetryFailed": {
+    "message": "Retry $count$ failed",
+    "description": "ZIP panel button to re-zip the failed images.",
+    "placeholders": { "count": { "content": "$1", "example": "4" } }
+  },
   "zipFreeLimit": {
     "message": "Free ZIPs include up to $limit$ images. Upgrade for unlimited.",
     "description": "Free-tier ZIP cap (not enforced during beta).",

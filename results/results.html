@@ -190,6 +190,27 @@
     </div>
   </footer>
 
+  <!-- ZIP progress panel -->
+  <div id="zipPanel" class="bid-zippanel" role="dialog" aria-modal="true" aria-labelledby="zipPanelTitle" hidden>
+    <div class="bid-zippanel__box">
+      <div class="bid-zippanel__icon" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+      </div>
+      <h2 id="zipPanelTitle" class="bid-zippanel__title" data-i18n="zipPanelPackaging">Preparing ZIP…</h2>
+      <div class="bid-zipbar"><div id="zipBarFill" class="bid-zipbar__fill"></div></div>
+      <div class="bid-zippanel__stats">
+        <span id="zipStatCount"></span>
+        <span id="zipStatPct" class="bid-mono">0%</span>
+      </div>
+      <p id="zipStatNote" class="bid-hint" data-i18n="zipPanelBgNote">This runs here in the page — keep it open until it finishes.</p>
+      <div class="bid-zippanel__actions">
+        <button id="zipRetryBtn" class="bid-btn bid-btn--sm" hidden></button>
+        <button id="zipCloseBtn" class="bid-btn bid-btn--sm" hidden data-i18n="commonClose">Close</button>
+        <button id="zipCancelBtn" class="bid-btn bid-btn--sm" data-i18n="commonCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="bid-toast" role="status" aria-live="polite" hidden></div>
 
   <!-- shared core first, then page modules (classic scripts, IIFE globals on BID.*) -->

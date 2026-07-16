@@ -336,10 +336,12 @@
 
   // --- ZIP download ----------------------------------------------------------
   let zipping = false;
+  let zipAbort = null;        // AbortController for the in-flight fetch
 
-  async function zipSelected() {
-    const items = selectedCandidates();
-    if (!items.length) { showToast(t('downloadNoneSelected')); return; }
+  function zipSelected() { return zipItems(selectedCandidates()); }
+
+  async function zipItems(items) {
+    if (!items || !items.length) { showToast(t('downloadNoneSelected')); return; }
 
     // Free-tier gate (a no-op while entitlements.BETA_ALL_FREE is on).
     if (!BID.entitlements.isEnabled(BID.entitlements.FLAGS.bulkZipOver50) &&
@@ -360,37 +362,99 @@
     try {
       await runZip(items);
     } catch (_) {
-      showToast(t('zipFailed'));
+      zipPanelError(t('zipFailed'));
     } finally {
       zipping = false;
-      setBusy(false);
       downloadZipBtn.disabled = selection.size === 0;
     }
   }
 
   async function runZip(items) {
-    const onProgress = (d, tot) => setBusy(true, t('zipFetching', [String(d), String(tot)]));
-    setBusy(true, t('zipPackaging', String(items.length)));
+    zipAbort = new AbortController();
+    showZipPanel(items.length);
 
-    const { ok, errored } = await fetchBytesHybrid(items, onProgress);
-
-    if (!ok.length) { setBusy(false); showToast(t('zipNothingFetched')); return; }
+    const { ok, errored } = await fetchBytesHybrid(items,
+      (done, total, bytes) => updateZipProgress(done, total, bytes), zipAbort.signal);
+    if (zipAbort.signal.aborted) { hideZipPanel(); return; }
+    if (!ok.length) { zipPanelError(t('zipNothingFetched')); return; }
 
     // Real size guard — the upfront estimate can read 0 when dimensions are unknown.
     let actual = 0;
     for (const o of ok) actual += o.bytes.length;
-    if (actual > DEFAULTS.zipMaxBytes) { setBusy(false); showToast(t('zipTooLarge', formatBytes(DEFAULTS.zipMaxBytes))); return; }
+    if (actual > DEFAULTS.zipMaxBytes) { zipPanelError(t('zipTooLarge', formatBytes(DEFAULTS.zipMaxBytes))); return; }
 
-    setBusy(true, t('zipCompressing'));
+    setZipCompressing();
     const blob = BID.zip.create(buildZipFiles(ok));
     await saveZipBlob(blob);
-    setBusy(false);
-
-    showToast(errored.length
-      ? t('zipDoneSome', [String(ok.length), String(errored.length)])
-      : t('zipDone', String(ok.length)));
+    zipPanelDone(ok.length, errored, actual);
     BID.analytics.capture(BID.analytics.EVENTS.DOWNLOAD_BATCH, { count: ok.length, zip: true });
   }
+
+  // --- ZIP progress panel ----------------------------------------------------
+  function setZipBar(pct) {
+    const fill = $('zipBarFill'); if (fill) fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+    const p = $('zipStatPct'); if (p) p.textContent = Math.round(Math.max(0, Math.min(100, pct))) + '%';
+  }
+  function showZipPanel(total) {
+    const panel = $('zipPanel'); if (!panel) return;
+    panel.hidden = false;
+    panel.classList.remove('is-error', 'is-indeterminate');
+    $('zipPanelTitle').textContent = t('zipPanelPackaging');
+    $('zipStatNote').textContent = t('zipPanelBgNote');
+    $('zipStatCount').textContent = t('zipPanelCount', ['0', String(total)]);
+    setZipBar(0);
+    $('zipRetryBtn').hidden = true;
+    $('zipCloseBtn').hidden = true;
+    $('zipCancelBtn').hidden = false;
+  }
+  function updateZipProgress(done, total, bytes) {
+    const panel = $('zipPanel'); if (!panel || panel.hidden) return;
+    panel.classList.remove('is-indeterminate');
+    setZipBar(total ? (done / total) * 100 : 0);
+    const size = bytes ? ' · ' + formatBytes(bytes) : '';
+    $('zipStatCount').textContent = t('zipPanelCount', [String(done), String(total)]) + size;
+  }
+  function setZipCompressing() {
+    const panel = $('zipPanel'); if (!panel) return;
+    panel.classList.add('is-indeterminate');
+    $('zipPanelTitle').textContent = t('zipPanelCompressing');
+    $('zipStatNote').textContent = t('zipPanelCompressing');
+    const p = $('zipStatPct'); if (p) p.textContent = '';
+  }
+  function zipPanelDone(count, errored, bytes) {
+    const panel = $('zipPanel'); if (!panel) return;
+    panel.classList.remove('is-indeterminate', 'is-error');
+    setZipBar(100);
+    $('zipPanelTitle').textContent = t('zipPanelDone');
+    $('zipStatCount').textContent = t('zipPanelSaved', [String(count), formatBytes(bytes)]);
+    $('zipCancelBtn').hidden = true;
+    $('zipCloseBtn').hidden = false;
+    const retry = $('zipRetryBtn');
+    if (errored && errored.length) {
+      $('zipStatNote').textContent = t('zipPanelPartial', String(errored.length));
+      retry.hidden = false;
+      retry.textContent = t('zipRetryFailed', String(errored.length));
+      const failedItems = errored.map((e) => e.item);
+      retry.onclick = () => { hideZipPanel(); zipItems(failedItems); };
+    } else {
+      $('zipStatNote').textContent = t('zipPanelSavedNote');
+      retry.hidden = true;
+    }
+  }
+  function zipPanelError(msg) {
+    const panel = $('zipPanel'); if (!panel) return;
+    panel.hidden = false;
+    panel.classList.add('is-error');
+    panel.classList.remove('is-indeterminate');
+    setZipBar(100);
+    $('zipPanelTitle').textContent = t('zipPanelFailedTitle');
+    $('zipStatNote').textContent = msg;
+    $('zipStatCount').textContent = '';
+    $('zipCancelBtn').hidden = true;
+    $('zipRetryBtn').hidden = true;
+    $('zipCloseBtn').hidden = false;
+  }
+  function hideZipPanel() { const p = $('zipPanel'); if (p) p.hidden = true; }
 
   // Persistent toast with Grant / Skip. The Grant handler calls requestAllUrls()
   // inside the click so the permission request stays within a user gesture.
@@ -453,13 +517,13 @@
   // Fetch bytes for `items`, running the hybrid-permission flow: try once, and if some
   // fetches fail while we lack <all_urls>, offer to grant it and retry the failures.
   // Shared by the ZIP and dedupe features.
-  async function fetchBytesHybrid(items, onProgress) {
-    let { ok, errored } = await BID.imageBytes.fetchAll(items, { onProgress });
-    if (errored.length && !(await BID.imageBytes.hasAllUrls())) {
+  async function fetchBytesHybrid(items, onProgress, signal) {
+    let { ok, errored } = await BID.imageBytes.fetchAll(items, { onProgress, signal });
+    if (errored.length && !(signal && signal.aborted) && !(await BID.imageBytes.hasAllUrls())) {
       setBusy(false);
       const granted = await promptGrantAccess(errored.length);
-      if (granted) {
-        const retry = await BID.imageBytes.fetchAll(errored.map((e) => e.item), { onProgress });
+      if (granted && !(signal && signal.aborted)) {
+        const retry = await BID.imageBytes.fetchAll(errored.map((e) => e.item), { onProgress, signal });
         ok = ok.concat(retry.ok);
         errored = retry.errored;
       }
@@ -766,6 +830,10 @@
     $('clearSelBtn').addEventListener('click', clearSelection);
     downloadBtn.addEventListener('click', () => downloadItems(selectedCandidates()));
     downloadZipBtn.addEventListener('click', zipSelected);
+    const zipCancel = $('zipCancelBtn');
+    if (zipCancel) zipCancel.addEventListener('click', () => { if (zipAbort) zipAbort.abort(); hideZipPanel(); });
+    const zipClose = $('zipCloseBtn');
+    if (zipClose) zipClose.addEventListener('click', hideZipPanel);
 
     setupDupControls();
 

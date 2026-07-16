@@ -60,7 +60,7 @@
     const total = items.length;
     const ok = [];
     const errored = [];
-    let done = 0, cursor = 0;
+    let done = 0, cursor = 0, bytesSoFar = 0;
 
     async function worker() {
       while (cursor < items.length) {
@@ -69,11 +69,13 @@
         try {
           const { bytes, contentType } = await fetchOne(item.url);
           ok.push({ item, bytes, contentType });
+          bytesSoFar += bytes.length;
         } catch (e) {
           errored.push({ item, error: (e && e.message) ? e.message : 'fetch_failed' });
         }
         done++;
-        if (onProgress) onProgress(done, total);
+        // Third arg (bytes fetched so far) powers the ZIP panel; older callers ignore it.
+        if (onProgress) onProgress(done, total, bytesSoFar);
       }
     }
 
