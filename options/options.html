@@ -24,107 +24,136 @@
       <span class="bid-badge bid-badge--muted" data-i18n="commonBeta">Beta</span>
     </header>
 
-    <!-- Appearance -->
-    <section class="bid-card">
-      <h2 data-i18n="optionsAppearanceSection">Appearance</h2>
-      <div class="bid-opt__row">
-        <div class="bid-opt__label">
-          <label data-i18n="optionsThemeLabel">Theme</label>
-          <p class="bid-hint" data-i18n="optionsThemeHint"></p>
-        </div>
-        <div class="bid-opt__control">
-          <div id="themeSeg" class="bid-seg" role="radiogroup" aria-label="Theme">
-            <button type="button" class="bid-seg__btn" role="radio" aria-checked="false" data-theme-value="auto" data-i18n="optionsThemeSystem">System</button>
-            <button type="button" class="bid-seg__btn" role="radio" aria-checked="false" data-theme-value="light" data-i18n="optionsThemeLight">Light</button>
-            <button type="button" class="bid-seg__btn" role="radio" aria-checked="false" data-theme-value="dark" data-i18n="optionsThemeDark">Dark</button>
+    <div class="bid-settings">
+      <nav class="bid-settings__nav" role="tablist" aria-label="Settings sections">
+        <button type="button" class="bid-settings__tab is-active" role="tab" id="tab-general" data-tab="general" aria-controls="panel-general" aria-selected="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          <span data-i18n="settingsTabGeneral">General</span>
+        </button>
+        <button type="button" class="bid-settings__tab" role="tab" id="tab-rules" data-tab="rules" aria-controls="panel-rules" aria-selected="false" tabindex="-1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span data-i18n="settingsTabRules">Folders</span>
+        </button>
+        <button type="button" class="bid-settings__tab" role="tab" id="tab-history" data-tab="history" aria-controls="panel-history" aria-selected="false" tabindex="-1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          <span data-i18n="settingsTabHistory">History</span>
+        </button>
+        <button type="button" class="bid-settings__tab" role="tab" id="tab-advanced" data-tab="advanced" aria-controls="panel-advanced" aria-selected="false" tabindex="-1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a5 5 0 0 0-6.4 6.4l-5 5a2 2 0 1 0 2.8 2.8l5-5a5 5 0 0 0 6.4-6.4l-2.9 2.9-2.1-2.1z"/></svg>
+          <span data-i18n="settingsTabAdvanced">Advanced</span>
+        </button>
+      </nav>
+
+      <div class="bid-settings__panels">
+        <!-- General ---------------------------------------------------------- -->
+        <section class="bid-settings__panel" role="tabpanel" id="panel-general" aria-labelledby="tab-general">
+          <div class="bid-card">
+            <h2 data-i18n="optionsAppearanceSection">Appearance</h2>
+            <div class="bid-opt__row">
+              <div class="bid-opt__label">
+                <label data-i18n="optionsThemeLabel">Theme</label>
+                <p class="bid-hint" data-i18n="optionsThemeHint"></p>
+              </div>
+              <div class="bid-opt__control">
+                <div id="themeSeg" class="bid-seg" role="radiogroup" aria-label="Theme">
+                  <button type="button" class="bid-seg__btn" role="radio" aria-checked="false" data-theme-value="auto" data-i18n="optionsThemeSystem">System</button>
+                  <button type="button" class="bid-seg__btn" role="radio" aria-checked="false" data-theme-value="light" data-i18n="optionsThemeLight">Light</button>
+                  <button type="button" class="bid-seg__btn" role="radio" aria-checked="false" data-theme-value="dark" data-i18n="optionsThemeDark">Dark</button>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- Duplicate detection -->
-    <section class="bid-card">
-      <h2 data-i18n="optionsDedupeSection">Duplicate detection</h2>
-      <div class="bid-opt__row">
-        <div class="bid-opt__label">
-          <label for="dedupeThreshold" data-i18n="optionsDedupeThreshold">Near-duplicate sensitivity</label>
-          <p class="bid-hint" data-i18n="optionsDedupeThresholdHint"></p>
-        </div>
-        <div class="bid-opt__control bid-slider-wrap">
-          <span class="bid-slider-end" data-i18n="optionsDedupeStrict">Stricter</span>
-          <input id="dedupeThreshold" type="range" min="0" max="16" step="1" value="6">
-          <span class="bid-slider-end" data-i18n="optionsDedupeLoose">Looser</span>
-          <output id="dedupeThresholdVal" class="bid-mono">6</output>
-        </div>
-      </div>
-    </section>
+          <div class="bid-card">
+            <h2 data-i18n="optionsLocaleSection">Language</h2>
+            <div class="bid-opt__row">
+              <div class="bid-opt__label"><p class="bid-hint" data-i18n="optionsLocaleHint"></p></div>
+              <div class="bid-opt__control">
+                <select id="locale" class="bid-select">
+                  <option value="" data-i18n="optionsLocaleAuto">Automatic (browser default)</option>
+                  <option value="en">English</option>
+                  <option value="es">Español</option>
+                  <option value="de">Deutsch</option>
+                  <option value="fr">Français</option>
+                  <option value="pt_BR">Português (Brasil)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </section>
 
-    <!-- Download history (cross-session dedupe memory) -->
-    <section class="bid-card">
-      <h2>
-        <span data-i18n="optionsHistorySection">Download history</span>
-        <span class="bid-badge bid-badge--muted" data-i18n="optionsComingSoon">Coming soon</span>
-      </h2>
-      <p class="bid-hint" data-i18n="optionsHistoryHint"></p>
-      <div class="bid-opt__actions">
-        <button class="bid-btn" id="clearHistory" disabled data-i18n="optionsClearHistory">Clear history</button>
-        <button class="bid-btn" id="exportHistory" disabled data-i18n="optionsExportHistory">Export history</button>
-      </div>
-    </section>
+        <!-- Folders (rules) -------------------------------------------------- -->
+        <section class="bid-settings__panel" role="tabpanel" id="panel-rules" aria-labelledby="tab-rules" hidden>
+          <div class="bid-card">
+            <h2>
+              <span data-i18n="optionsFolderRulesSection">Download folders</span>
+              <span class="bid-badge bid-badge--muted" data-i18n="commonPro">Pro</span>
+            </h2>
+            <p class="bid-hint" data-i18n="optionsFolderRulesHint"></p>
+            <div id="folderRulesEditor" class="bid-fr"></div>
+            <div class="bid-fr__foot">
+              <button id="frAddRule" class="bid-btn bid-btn--sm" data-i18n="frAddRule">Add rule</button>
+              <span id="frSaved" class="bid-hint bid-dup-note" hidden data-i18n="commonSaved">Saved</span>
+            </div>
+            <div class="bid-fr__test">
+              <label class="bid-field__label" for="frTestUrl" data-i18n="frTestLabel">Test a URL</label>
+              <div class="bid-fr__testrow">
+                <input id="frTestUrl" class="bid-input" type="text" data-i18n-placeholder="frTestPlaceholder" placeholder="https://example.com/photo.jpg">
+                <span id="frTestResult" class="bid-hint bid-mono"></span>
+              </div>
+            </div>
+          </div>
+        </section>
 
-    <!-- Download folders (folder rules) -->
-    <section class="bid-card">
-      <h2>
-        <span data-i18n="optionsFolderRulesSection">Download folders</span>
-        <span class="bid-badge bid-badge--muted" data-i18n="commonPro">Pro</span>
-      </h2>
-      <p class="bid-hint" data-i18n="optionsFolderRulesHint"></p>
-      <div id="folderRulesEditor" class="bid-fr"></div>
-      <div class="bid-fr__foot">
-        <button id="frAddRule" class="bid-btn bid-btn--sm" data-i18n="frAddRule">Add rule</button>
-        <span id="frSaved" class="bid-hint bid-dup-note" hidden data-i18n="commonSaved">Saved</span>
-      </div>
-      <div class="bid-fr__test">
-        <label class="bid-field__label" for="frTestUrl" data-i18n="frTestLabel">Test a URL</label>
-        <div class="bid-fr__testrow">
-          <input id="frTestUrl" class="bid-input" type="text" data-i18n-placeholder="frTestPlaceholder" placeholder="https://example.com/photo.jpg">
-          <span id="frTestResult" class="bid-hint bid-mono"></span>
-        </div>
-      </div>
-    </section>
+        <!-- History ---------------------------------------------------------- -->
+        <section class="bid-settings__panel" role="tabpanel" id="panel-history" aria-labelledby="tab-history" hidden>
+          <div class="bid-card">
+            <h2>
+              <span data-i18n="optionsHistorySection">Download history</span>
+              <span class="bid-badge bid-badge--muted" data-i18n="optionsComingSoon">Coming soon</span>
+            </h2>
+            <p class="bid-hint" data-i18n="optionsHistoryHint"></p>
+            <div class="bid-opt__actions">
+              <button class="bid-btn" id="clearHistory" disabled data-i18n="optionsClearHistory">Clear history</button>
+              <button class="bid-btn" id="exportHistory" disabled data-i18n="optionsExportHistory">Export history</button>
+            </div>
+          </div>
+        </section>
 
-    <!-- Privacy & analytics -->
-    <section class="bid-card">
-      <h2 data-i18n="optionsAnalyticsSection">Privacy &amp; analytics</h2>
-      <label class="bid-opt__row bid-opt__row--toggle">
-        <span class="bid-opt__label">
-          <span data-i18n="optionsAnalyticsToggle">Send anonymous, content-free usage stats</span>
-          <p class="bid-hint" data-i18n="optionsAnalyticsHint"></p>
-        </span>
-        <span class="bid-switch">
-          <input type="checkbox" id="analyticsToggle">
-          <span class="bid-switch__track" aria-hidden="true"></span>
-        </span>
-      </label>
-    </section>
+        <!-- Advanced --------------------------------------------------------- -->
+        <section class="bid-settings__panel" role="tabpanel" id="panel-advanced" aria-labelledby="tab-advanced" hidden>
+          <div class="bid-card">
+            <h2 data-i18n="optionsDedupeSection">Duplicate detection</h2>
+            <div class="bid-opt__row">
+              <div class="bid-opt__label">
+                <label for="dedupeThreshold" data-i18n="optionsDedupeThreshold">Near-duplicate sensitivity</label>
+                <p class="bid-hint" data-i18n="optionsDedupeThresholdHint"></p>
+              </div>
+              <div class="bid-opt__control bid-slider-wrap">
+                <span class="bid-slider-end" data-i18n="optionsDedupeStrict">Stricter</span>
+                <input id="dedupeThreshold" type="range" min="0" max="16" step="1" value="6">
+                <span class="bid-slider-end" data-i18n="optionsDedupeLoose">Looser</span>
+                <output id="dedupeThresholdVal" class="bid-mono">6</output>
+              </div>
+            </div>
+          </div>
 
-    <!-- Language -->
-    <section class="bid-card">
-      <h2 data-i18n="optionsLocaleSection">Language</h2>
-      <div class="bid-opt__row">
-        <div class="bid-opt__label"><p class="bid-hint" data-i18n="optionsLocaleHint"></p></div>
-        <div class="bid-opt__control">
-          <select id="locale" class="bid-select">
-            <option value="" data-i18n="optionsLocaleAuto">Automatic (browser default)</option>
-            <option value="en">English</option>
-            <option value="es">Español</option>
-            <option value="de">Deutsch</option>
-            <option value="fr">Français</option>
-            <option value="pt_BR">Português (Brasil)</option>
-          </select>
-        </div>
+          <div class="bid-card">
+            <h2 data-i18n="optionsAnalyticsSection">Privacy &amp; analytics</h2>
+            <label class="bid-opt__row bid-opt__row--toggle">
+              <span class="bid-opt__label">
+                <span data-i18n="optionsAnalyticsToggle">Send anonymous, content-free usage stats</span>
+                <p class="bid-hint" data-i18n="optionsAnalyticsHint"></p>
+              </span>
+              <span class="bid-switch">
+                <input type="checkbox" id="analyticsToggle">
+                <span class="bid-switch__track" aria-hidden="true"></span>
+              </span>
+            </label>
+          </div>
+        </section>
       </div>
-    </section>
+    </div>
 
     <div id="savedToast" class="bid-toast" role="status" aria-live="polite" hidden>
       <span data-i18n="commonSaved">Saved</span>
