@@ -76,9 +76,21 @@
     <section class="bid-card">
       <h2>
         <span data-i18n="optionsFolderRulesSection">Download folders</span>
-        <span class="bid-badge bid-badge--muted" data-i18n="optionsComingSoon">Coming soon</span>
+        <span class="bid-badge bid-badge--muted" data-i18n="commonPro">Pro</span>
       </h2>
       <p class="bid-hint" data-i18n="optionsFolderRulesHint"></p>
+      <div id="folderRulesEditor" class="bid-fr"></div>
+      <div class="bid-fr__foot">
+        <button id="frAddRule" class="bid-btn bid-btn--sm" data-i18n="frAddRule">Add rule</button>
+        <span id="frSaved" class="bid-hint bid-dup-note" hidden data-i18n="commonSaved">Saved</span>
+      </div>
+      <div class="bid-fr__test">
+        <label class="bid-field__label" for="frTestUrl" data-i18n="frTestLabel">Test a URL</label>
+        <div class="bid-fr__testrow">
+          <input id="frTestUrl" class="bid-input" type="text" data-i18n-placeholder="frTestPlaceholder" placeholder="https://example.com/photo.jpg">
+          <span id="frTestResult" class="bid-hint bid-mono"></span>
+        </div>
+      </div>
     </section>
 
     <!-- Privacy & analytics -->
@@ -124,6 +136,8 @@
   <script src="../shared/i18n.js"></script>
   <script src="../shared/entitlements.js"></script>
   <script src="../shared/analytics.js"></script>
+  <script src="../shared/folderrules.js"></script>
   <script src="options.js"></script>
+  <script src="folderrules.js"></script>
 </body>
 </html>

@@ -59,10 +59,13 @@
     return sanitizeFilename(name, ext || 'jpg', index);
   }
 
-  function downloadOne(candidate, index) {
+  function downloadOne(candidate, index, folder) {
     return new Promise((resolve) => {
       let filename;
-      try { filename = filenameFor(candidate, index); } catch (_) { filename = 'image-' + ((index || 0) + 1); }
+      try {
+        filename = filenameFor(candidate, index);
+        if (folder) filename = folder + '/' + filename;   // route into a Downloads subfolder
+      } catch (_) { filename = 'image-' + ((index || 0) + 1); }
       try {
         chrome.downloads.download(
           { url: candidate.url, filename: filename, conflictAction: 'uniquify' },
@@ -95,7 +98,9 @@
     async function worker() {
       while (cursor < items.length) {
         const idx = cursor++;
-        const res = await downloadOne(items[idx], idx);
+        let folder = '';
+        try { if (options.folderFor) folder = options.folderFor(items[idx], idx) || ''; } catch (_) { folder = ''; }
+        const res = await downloadOne(items[idx], idx, folder);
         if (res.ok) started++;
         else failed.push({ item: res.item, error: res.error });
         done++;

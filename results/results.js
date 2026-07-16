@@ -50,6 +50,7 @@
   let dedupeComputed = false;   // whether _dupGroup tags are current for this candidate set
   let pageHost = '';            // hostname of the scanned page (for "only from this page")
   let lastDupRes = null;        // last dedupe result, so the sidebar note survives a filter reset
+  let folderRules = [];         // Download-folder routing rules (from options)
 
   const SOURCE_LABEL_KEY = {
     img: 'sourceImg', srcset: 'sourceSrcset', picture: 'sourcePicture',
@@ -61,6 +62,7 @@
   async function boot() {
     await BID.analytics._hydrate();
     try { const s = await chrome.storage.local.get(STORAGE.settings); settings = s[STORAGE.settings] || {}; } catch (_) { settings = {}; }
+    try { const r = await chrome.storage.local.get(STORAGE.folderRules); folderRules = r[STORAGE.folderRules] || []; if (!Array.isArray(folderRules)) folderRules = []; } catch (_) { folderRules = []; }
 
     setupStaticControls();
 
@@ -270,6 +272,20 @@
     catch (_) { window.open(item.url, '_blank'); }
   }
 
+  // Route a download into a Downloads subfolder per the user's folder rules (Pro; open in beta).
+  function routeFolder(item, idx) {
+    if (!folderRules.length || !BID.folderRules) return '';
+    if (!BID.entitlements.isEnabled(BID.entitlements.FLAGS.folderRules)) return '';
+    try {
+      return BID.folderRules.route({
+        domain: item.domain, ext: item.ext, filename: item.filename,
+        naturalWidth: item.naturalWidth, naturalHeight: item.naturalHeight,
+        displayWidth: item.displayWidth, displayHeight: item.displayHeight,
+        index: idx, date: new Date(),
+      }, folderRules);
+    } catch (_) { return ''; }
+  }
+
   async function downloadItems(items) {
     if (!items || !items.length) { showToast(t('downloadNoneSelected')); return; }
     showToast(items.length === 1 ? t('downloadStartingOne') : t('downloadStartingOther', String(items.length)));
@@ -277,7 +293,7 @@
       items.length === 1 ? BID.analytics.EVENTS.DOWNLOAD_INDIVIDUAL : BID.analytics.EVENTS.DOWNLOAD_BATCH,
       { count: items.length, batchSize: items.length },
     );
-    const res = await BID.downloads.downloadMany(items, { concurrency: 6 });
+    const res = await BID.downloads.downloadMany(items, { concurrency: 6, folderFor: routeFolder });
     if (res.failed.length) {
       showToast(
         t('downloadFailedSome', [String(res.failed.length), String(res.total)]),

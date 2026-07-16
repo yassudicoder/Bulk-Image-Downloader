@@ -62,6 +62,42 @@ body { padding: var(--bid-space-6) var(--bid-space-4); }
 /* z-index lifts the focused button so its ring paints over neighbours and the container. */
 .bid-seg__btn:focus-visible { outline: none; box-shadow: var(--bid-focus-ring); z-index: 1; }
 
+/* Folder Rules editor */
+.bid-fr { display: flex; flex-direction: column; gap: var(--bid-space-3); margin-top: var(--bid-space-3); }
+.bid-fr__rule {
+  border: 1px solid var(--bid-border); border-radius: var(--bid-radius);
+  padding: var(--bid-space-3); background: var(--bid-surface-2);
+  display: flex; flex-direction: column; gap: var(--bid-space-3);
+}
+.bid-fr__rulehead { display: flex; align-items: center; gap: var(--bid-space-2); }
+.bid-fr__rulehead input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--bid-accent); flex: 0 0 auto; }
+.bid-fr__name { flex: 1 1 auto; font-weight: 500; }
+.bid-fr__icon { min-width: 30px; padding: 0 var(--bid-space-2); flex: 0 0 auto; }
+.bid-fr__del:hover:not(:disabled) { background: var(--bid-danger-soft); color: var(--bid-danger); }
+.bid-fr__sublabel { font-size: var(--bid-fs-sm); font-weight: 600; color: var(--bid-text-muted); }
+.bid-fr__conds, .bid-fr__tmpl { display: flex; flex-direction: column; gap: var(--bid-space-2); }
+.bid-fr__cond { display: flex; gap: var(--bid-space-2); align-items: center; }
+.bid-fr__cond .bid-select { flex: 0 0 auto; width: auto; min-width: 156px; }
+.bid-fr__cond .bid-input { flex: 1 1 auto; }
+.bid-fr__tokens { display: flex; flex-wrap: wrap; gap: var(--bid-space-1); }
+.bid-fr__token {
+  appearance: none; border: 1px solid var(--bid-border-strong); background: var(--bid-surface);
+  color: var(--bid-text-muted); font-family: var(--bid-mono); font-size: var(--bid-fs-xs);
+  padding: 2px 6px; border-radius: var(--bid-radius-sm); cursor: pointer;
+}
+.bid-fr__token:hover { background: var(--bid-accent-soft); color: var(--bid-accent); border-color: var(--bid-accent); }
+.bid-fr__token:focus-visible { outline: none; box-shadow: var(--bid-focus-ring); }
+.bid-fr__preview { font-family: var(--bid-mono); color: var(--bid-accent); word-break: break-all; }
+.bid-fr__foot { display: flex; align-items: center; gap: var(--bid-space-3); margin-top: var(--bid-space-3); }
+.bid-fr__test {
+  margin-top: var(--bid-space-4); padding-top: var(--bid-space-3);
+  border-top: 1px solid var(--bid-border); display: flex; flex-direction: column; gap: var(--bid-space-2);
+}
+.bid-fr__testrow { display: flex; gap: var(--bid-space-3); align-items: center; flex-wrap: wrap; }
+.bid-fr__testrow .bid-input { flex: 1 1 240px; }
+.bid-fr__testrow .bid-mono { color: var(--bid-accent); word-break: break-all; }
+.bid-field__label { font-size: var(--bid-fs-sm); color: var(--bid-text-muted); font-weight: 500; }
+
 /* Toggle switch */
 .bid-switch { position: relative; display: inline-block; width: 42px; height: 24px; flex: 0 0 auto; }
 .bid-switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
