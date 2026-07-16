@@ -16,12 +16,12 @@
   --bid-text-muted: #5c6672;
   --bid-text-faint: #8a94a1;
 
-  /* Palette — accent (teal; kept in sync with tools/gen-icons.js) */
-  --bid-accent: #0d9488;
-  --bid-accent-hover: #0f766e;
-  --bid-accent-active: #115e59;
+  /* Palette — accent (forest green; kept in sync with tools/gen-icons.js) */
+  --bid-accent: #15803d;
+  --bid-accent-hover: #166534;
+  --bid-accent-active: #14532d;
   --bid-accent-fg: #ffffff;
-  --bid-accent-soft: #d5f0ec;
+  --bid-accent-soft: #dcf3e3;
 
   /* Palette — semantic */
   --bid-danger: #dc2626;
@@ -101,11 +101,11 @@
     --bid-text-muted: #9aa4b2;
     --bid-text-faint: #6b7583;
 
-    --bid-accent: #2dd4bf;
-    --bid-accent-hover: #5eead4;
-    --bid-accent-active: #99f6e4;
-    --bid-accent-fg: #06231f;
-    --bid-accent-soft: #123b37;
+    --bid-accent: #4ade80;
+    --bid-accent-hover: #86efac;
+    --bid-accent-active: #bbf7d0;
+    --bid-accent-fg: #052e16;
+    --bid-accent-soft: #14311f;
 
     --bid-danger: #f87171;
     --bid-danger-soft: #3a1d1d;
@@ -143,11 +143,11 @@
   --bid-text-muted: #9aa4b2;
   --bid-text-faint: #6b7583;
 
-  --bid-accent: #2dd4bf;
-  --bid-accent-hover: #5eead4;
-  --bid-accent-active: #99f6e4;
-  --bid-accent-fg: #06231f;
-  --bid-accent-soft: #123b37;
+  --bid-accent: #4ade80;
+  --bid-accent-hover: #86efac;
+  --bid-accent-active: #bbf7d0;
+  --bid-accent-fg: #052e16;
+  --bid-accent-soft: #14311f;
 
   --bid-danger: #f87171;
   --bid-danger-soft: #3a1d1d;

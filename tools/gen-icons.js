@@ -8,7 +8,7 @@
  * loads with valid PNGs during development.
  *
  * Zero dependencies: writes real PNGs using Node's built-in zlib. Draws a rounded
- * teal tile with a white download arrow over a small "stack" to imply bulk.
+ * green tile with a white download arrow over a small "stack" to imply bulk.
  *
  *   node tools/gen-icons.js
  */
@@ -21,8 +21,8 @@ const OUT_DIR = path.join(__dirname, '..', 'assets', 'icons');
 const SIZES = [16, 32, 48, 128];
 
 // Brand-ish palette (placeholder). Kept in sync with shared/tokens.css --bid-accent.
-const BG_TOP = [13, 148, 136];    // teal-600
-const BG_BOT = [15, 118, 110];    // teal-700
+const BG_TOP = [34, 197, 94];     // green-500
+const BG_BOT = [21, 128, 61];     // green-700
 const FG = [255, 255, 255];
 
 function lerp(a, b, t) {
