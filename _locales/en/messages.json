@@ -73,6 +73,8 @@
     "description": "Shown when a full-page rescan can't reach the source tab."
   },
   "resultsThumbSize": { "message": "Thumbnail size", "description": "Label for thumbnail size control." },
+  "resultsUpgradePro": { "message": "Upgrade to Pro", "description": "Header button opening the Pro upsell." },
+  "upgradeProToast": { "message": "You're on the free beta — every Pro feature is unlocked. 🎉", "description": "Shown when clicking Upgrade to Pro during the free beta." },
   "resultsSortBy": { "message": "Sort images", "description": "Accessible label/tooltip for the sort dropdown." },
   "sortDom": { "message": "DOM order", "description": "Sort: original page order." },
   "sortNameAsc": { "message": "Name A–Z", "description": "Sort: filename ascending." },

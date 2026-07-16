@@ -13,21 +13,21 @@
 
   const CELL_TEMPLATE = (function () {
     const t = document.createElement('template');
+    // Mockup-style card: the image fills the tile, with a selection check (top-left), a
+    // source badge (top-right, revealed on hover) and a dimensions pill (bottom-left)
+    // overlaid on the thumbnail — no separate caption row.
     t.innerHTML =
       '<div class="bid-cell" role="gridcell" tabindex="-1">' +
-        '<input type="checkbox" class="bid-cell__check" tabindex="-1">' +
-        '<span class="bid-badge bid-cell__source"></span>' +
         '<div class="bid-cell__thumbwrap">' +
           '<img class="bid-cell__thumb" loading="lazy" decoding="async" alt="">' +
           '<div class="bid-cell__broken"></div>' +
-        '</div>' +
-        '<div class="bid-cell__dl">' +
-          '<button type="button" class="bid-btn bid-btn--sm bid-cell__open" tabindex="-1"></button>' +
-          '<button type="button" class="bid-btn bid-btn--sm bid-cell__dlbtn" tabindex="-1"></button>' +
-        '</div>' +
-        '<div class="bid-cell__meta">' +
+          '<input type="checkbox" class="bid-cell__check" tabindex="-1">' +
+          '<span class="bid-badge bid-cell__source"></span>' +
           '<span class="bid-cell__dims"></span>' +
-          '<span class="bid-cell__name"></span>' +
+          '<div class="bid-cell__dl">' +
+            '<button type="button" class="bid-btn bid-btn--sm bid-cell__open" tabindex="-1"></button>' +
+            '<button type="button" class="bid-btn bid-btn--sm bid-cell__dlbtn" tabindex="-1"></button>' +
+          '</div>' +
         '</div>' +
       '</div>';
     return t;
@@ -44,7 +44,8 @@
     const scrollEl = opts.scrollEl;
     const sizerEl = opts.sizerEl;
     const gap = opts.gap != null ? opts.gap : 12;
-    const captionH = opts.captionH != null ? opts.captionH : 31;
+    // No caption row anymore — cards are square, all metadata overlays the thumbnail.
+    const captionH = opts.captionH != null ? opts.captionH : 0;
     const overscan = 2;
 
     const strings = opts.strings || {};
@@ -101,10 +102,10 @@
       img.onerror = function () { el.classList.add('is-broken'); img.classList.add('is-broken'); };
 
       el.querySelector('.bid-cell__broken').textContent = strings.broken || '';
-      el.querySelector('.bid-cell__dims').textContent = dimsText(item, strings.sizeUnknown || '—');
-      const nameEl = el.querySelector('.bid-cell__name');
-      nameEl.textContent = item.filename || item.alt || item.domain || '';
-      nameEl.title = item.url;
+      const dimsEl = el.querySelector('.bid-cell__dims');
+      dimsEl.textContent = dimsText(item, strings.sizeUnknown || '—');
+      // Filename lives in the tooltip now that the caption row is gone.
+      dimsEl.title = item.filename || item.url || '';
 
       const openBtn = el.querySelector('.bid-cell__open');
       openBtn.textContent = '↗';

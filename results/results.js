@@ -680,6 +680,9 @@
     $('analyticsYes').addEventListener('click', () => { BID.analytics.setOptIn(true); hideAnalyticsPrompt(); });
     $('analyticsNo').addEventListener('click', () => { BID.analytics.setOptIn(false); hideAnalyticsPrompt(); });
 
+    const upgrade = $('upgradeProBtn');
+    if (upgrade) upgrade.addEventListener('click', () => showToast(t('upgradeProToast')));
+
     setupThemeToggle();
     setupKebab();
   }

@@ -96,20 +96,17 @@ body {
   background: var(--bid-surface);
 }
 .bid-dupbar[hidden] { display: none; }
-.bid-dup-tabs {
-  display: inline-flex; gap: 2px; padding: 2px;
-  background: var(--bid-surface-2); border-radius: var(--bid-radius);
-}
+.bid-dup-tabs { display: inline-flex; gap: var(--bid-space-4); align-self: stretch; }
 .bid-dup-tab {
   appearance: none; border: none; background: transparent; cursor: pointer;
-  color: var(--bid-text-muted); font: inherit; font-size: var(--bid-fs-md); font-weight: 500;
-  padding: var(--bid-space-1) var(--bid-space-3); border-radius: var(--bid-radius-sm);
+  color: var(--bid-text-muted); font: inherit; font-size: var(--bid-fs-md); font-weight: 600;
+  padding: var(--bid-space-2) 2px; border-bottom: 2px solid transparent; margin-bottom: -1px;
   display: inline-flex; align-items: center; gap: var(--bid-space-1);
-  transition: background var(--bid-transition), color var(--bid-transition);
+  transition: color var(--bid-transition), border-color var(--bid-transition);
 }
 .bid-dup-tab:hover { color: var(--bid-text); }
-.bid-dup-tab.is-active { background: var(--bid-surface); color: var(--bid-text); box-shadow: var(--bid-shadow-sm); }
-.bid-dup-tab:focus-visible { outline: none; box-shadow: var(--bid-focus-ring); }
+.bid-dup-tab.is-active { color: var(--bid-accent); border-bottom-color: var(--bid-accent); }
+.bid-dup-tab:focus-visible { outline: none; box-shadow: var(--bid-focus-ring); border-radius: var(--bid-radius-sm); }
 .bid-dup-tab__count { font-size: var(--bid-fs-xs); font-variant-numeric: tabular-nums; color: var(--bid-text-faint); }
 .bid-dup-tab.is-active .bid-dup-tab__count { color: var(--bid-accent); }
 .bid-dup-thresh {
@@ -129,13 +126,11 @@ body {
   position: absolute;
   box-sizing: border-box;
   border: 2px solid transparent;
-  border-radius: var(--bid-radius);
+  border-radius: var(--bid-radius-lg);
   background: var(--bid-surface);
   box-shadow: var(--bid-shadow-sm);
   overflow: hidden;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
   transition: border-color var(--bid-transition), box-shadow var(--bid-transition);
 }
 .bid-cell:hover { box-shadow: var(--bid-shadow); }
@@ -143,7 +138,7 @@ body {
 .bid-cell.is-focused { box-shadow: var(--bid-focus-ring); }
 
 .bid-cell__thumbwrap {
-  position: relative; flex: 1 1 auto; min-height: 0;
+  position: relative; width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
   background: repeating-conic-gradient(var(--bid-surface-2) 0% 25%, var(--bid-surface-3) 0% 50%) 50% / 16px 16px;
 }
@@ -152,25 +147,44 @@ body {
 .bid-cell__broken { display: none; color: var(--bid-text-faint); font-size: var(--bid-fs-xs); padding: var(--bid-space-2); text-align: center; }
 .bid-cell.is-broken .bid-cell__broken { display: block; }
 
+/* Selection check — a rounded-square badge overlaid on the thumbnail (mockup style). */
 .bid-cell__check {
-  position: absolute; top: var(--bid-space-1); left: var(--bid-space-1);
-  width: 20px; height: 20px; accent-color: var(--bid-accent); cursor: pointer; margin: 0; z-index: 2;
-  background: var(--bid-surface); border-radius: var(--bid-radius-sm);
+  appearance: none; -webkit-appearance: none;
+  position: absolute; top: var(--bid-space-2); left: var(--bid-space-2); z-index: 3;
+  width: 22px; height: 22px; margin: 0; cursor: pointer;
+  border-radius: var(--bid-radius-sm);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: background var(--bid-transition), border-color var(--bid-transition);
 }
-.bid-cell__source { position: absolute; top: var(--bid-space-1); right: var(--bid-space-1); z-index: 2; }
+.bid-cell__check:checked { background: var(--bid-accent); border-color: var(--bid-accent); }
+.bid-cell__check:checked::after {
+  content: ""; position: absolute; left: 7px; top: 3px;
+  width: 5px; height: 10px; border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
+}
+.bid-cell__check:focus-visible { outline: none; box-shadow: var(--bid-focus-ring); }
+
+/* Source badge (IMG/BG/…): subtle, revealed on hover so the card stays clean. */
+.bid-cell__source {
+  position: absolute; top: var(--bid-space-2); right: var(--bid-space-2); z-index: 3;
+  opacity: 0; transition: opacity var(--bid-transition);
+}
+.bid-cell:hover .bid-cell__source, .bid-cell:focus-within .bid-cell__source { opacity: 1; }
+
+/* Dimensions pill overlaid on the image (bottom-left). */
+.bid-cell__dims {
+  position: absolute; left: var(--bid-space-2); bottom: var(--bid-space-2); z-index: 3;
+  background: var(--bid-badge-bg); color: var(--bid-badge-fg);
+  font-size: var(--bid-fs-xs); font-variant-numeric: tabular-nums; white-space: nowrap;
+  padding: 2px 7px; border-radius: var(--bid-radius-pill);
+}
+
 .bid-cell__dl {
-  position: absolute; bottom: var(--bid-space-1); right: var(--bid-space-1); z-index: 2;
+  position: absolute; bottom: var(--bid-space-2); right: var(--bid-space-2); z-index: 3;
   opacity: 0; transition: opacity var(--bid-transition);
 }
 .bid-cell:hover .bid-cell__dl, .bid-cell:focus-within .bid-cell__dl { opacity: 1; }
-
-.bid-cell__meta {
-  flex: 0 0 auto; padding: var(--bid-space-2);
-  border-top: 1px solid var(--bid-border);
-  display: flex; align-items: center; justify-content: space-between; gap: var(--bid-space-2);
-}
-.bid-cell__dims { font-size: var(--bid-fs-xs); font-variant-numeric: tabular-nums; color: var(--bid-text-muted); white-space: nowrap; }
-.bid-cell__name { font-size: var(--bid-fs-xs); color: var(--bid-text-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: rtl; text-align: left; }
 
 /* Empty / error states ---------------------------------------------------- */
 .bid-state {
