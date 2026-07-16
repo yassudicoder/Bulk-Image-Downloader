@@ -34,6 +34,34 @@ body { padding: var(--bid-space-6) var(--bid-space-4); }
 .bid-slider-end { font-size: var(--bid-fs-xs); color: var(--bid-text-faint); }
 .bid-slider-wrap output { min-width: 2ch; text-align: right; color: var(--bid-text-muted); }
 
+/* Segmented control (theme picker) */
+.bid-seg {
+  display: inline-flex;
+  border: 1px solid var(--bid-border-strong);
+  border-radius: var(--bid-radius);
+  background: var(--bid-surface);
+  /* No overflow:hidden — it would clip the focus ring. Corners are rounded per-button. */
+}
+.bid-seg__btn {
+  appearance: none;
+  border: none;
+  border-right: 1px solid var(--bid-border);
+  background: transparent;
+  color: var(--bid-text-muted);
+  font: inherit; font-size: var(--bid-fs-md); font-weight: 500;
+  padding: 0 var(--bid-space-4); height: var(--bid-control-h);
+  cursor: pointer;
+  position: relative;
+  transition: background var(--bid-transition), color var(--bid-transition);
+}
+.bid-seg__btn:first-child { border-top-left-radius: var(--bid-radius); border-bottom-left-radius: var(--bid-radius); }
+.bid-seg__btn:last-child { border-right: none; border-top-right-radius: var(--bid-radius); border-bottom-right-radius: var(--bid-radius); }
+.bid-seg__btn:hover { background: var(--bid-surface-2); color: var(--bid-text); }
+.bid-seg__btn.is-active { background: var(--bid-accent); color: var(--bid-accent-fg); }
+.bid-seg__btn.is-active:hover { background: var(--bid-accent-hover); }
+/* z-index lifts the focused button so its ring paints over neighbours and the container. */
+.bid-seg__btn:focus-visible { outline: none; box-shadow: var(--bid-focus-ring); z-index: 1; }
+
 /* Toggle switch */
 .bid-switch { position: relative; display: inline-block; width: 42px; height: 24px; flex: 0 0 auto; }
 .bid-switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }

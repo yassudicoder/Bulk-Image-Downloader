@@ -88,7 +88,8 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  /* Auto mode: follow the OS only when the user hasn't picked a theme. */
+  :root:not([data-theme]) {
     --bid-bg: #0f1216;
     --bid-surface: #171b21;
     --bid-surface-2: #1e242c;
@@ -123,4 +124,52 @@
     --bid-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
     --bid-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
   }
+}
+
+/*
+ * Explicit theme override — shared/theme.js sets <html data-theme="light|dark"> from the
+ * user's Appearance choice, winning over the OS media query. The dark values below MUST
+ * stay in sync with the @media block above.
+ */
+:root[data-theme="dark"] {
+  --bid-bg: #0f1216;
+  --bid-surface: #171b21;
+  --bid-surface-2: #1e242c;
+  --bid-surface-3: #262d37;
+  --bid-border: #2c333d;
+  --bid-border-strong: #3a424e;
+
+  --bid-text: #e7ebf0;
+  --bid-text-muted: #9aa4b2;
+  --bid-text-faint: #6b7583;
+
+  --bid-accent: #2dd4bf;
+  --bid-accent-hover: #5eead4;
+  --bid-accent-active: #99f6e4;
+  --bid-accent-fg: #06231f;
+  --bid-accent-soft: #123b37;
+
+  --bid-danger: #f87171;
+  --bid-danger-soft: #3a1d1d;
+  --bid-warn: #fbbf24;
+  --bid-warn-soft: #3a2e12;
+  --bid-ok: #4ade80;
+  --bid-ok-soft: #14351f;
+  --bid-info: #60a5fa;
+
+  --bid-badge-bg: rgba(0, 0, 0, 0.72);
+  --bid-badge-fg: #f2f5f8;
+
+  --bid-focus: #60a5fa;
+
+  --bid-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --bid-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --bid-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+
+  color-scheme: dark;
+}
+
+/* Explicit light: token values already come from :root; just pin the native control scheme. */
+:root[data-theme="light"] {
+  color-scheme: light;
 }

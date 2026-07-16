@@ -1,10 +1,11 @@
 /**
  * background/service-worker.js — classic MV3 service worker (NOT a module).
  *
- * Flow: toolbar click -> inject scanner into the active tab (activeTab grants temporary
- * access) -> receive the ScanResult from executeScript -> stash it in storage.session ->
- * open the results page as a new extension tab. The results page reads the stash directly,
- * so nothing depends on this worker staying alive.
+ * Flow: the toolbar click opens the popup -> the popup asks this worker (POPUP_SCAN) to
+ * inject the scanner into the active tab (activeTab grants temporary access) -> receive the
+ * ScanResult from executeScript -> stash it in storage.session -> return a summary to the
+ * popup. The popup opens the results page (?scan=<id>), which reads the stash directly, so
+ * nothing depends on this worker staying alive.
  */
 'use strict';
 importScripts('../shared/constants.js', '../shared/util.js');
@@ -53,27 +54,29 @@ async function storeScan(result, sourceTabId) {
   return scanId;
 }
 
-function openResults(scanId) {
-  const url = chrome.runtime.getURL('results/results.html') + '?scan=' + encodeURIComponent(scanId);
-  return chrome.tabs.create({ url });
-}
+// Scan the active tab (identified by the popup) and stash the ScanResult. Returns a compact
+// summary the popup renders; the popup opens the results tab itself on "View Results".
+async function scanActiveTabAndStore(tabId, url, fullPage) {
+  if (tabId == null) return { ok: false, error: 'no_tab' };
 
-async function handleActionClick(tab) {
-  if (!tab || tab.id == null) return;
-
-  if (isRestricted(tab.url)) {
+  if (isRestricted(url)) {
     const scanId = await storeScan(
-      { ok: false, error: 'restricted', pageUrl: tab.url || '', candidates: [], scannedAt: Date.now() },
-      tab.id,
+      { ok: false, error: 'restricted', pageUrl: url || '', candidates: [], scannedAt: Date.now() },
+      tabId,
     );
-    await openResults(scanId);
-    return;
+    return { ok: false, restricted: true, scanId };
   }
 
   try {
-    const result = await injectAndScan(tab.id, false);
-    const scanId = await storeScan(result, tab.id);
-    await openResults(scanId);
+    const result = await injectAndScan(tabId, fullPage);
+    const scanId = await storeScan(result, tabId);
+    return {
+      ok: true,
+      scanId,
+      count: (result.candidates || []).length,
+      pageUrl: result.pageUrl || url || '',
+      fullPage: !!fullPage,
+    };
   } catch (err) {
     // Injection can fail on hardened pages, file:// without file access, PDFs, etc.
     const scanId = await storeScan(
@@ -81,13 +84,13 @@ async function handleActionClick(tab) {
         ok: false,
         error: 'failed',
         message: err && err.message ? String(err.message).slice(0, 300) : 'unknown',
-        pageUrl: tab.url || '',
+        pageUrl: url || '',
         candidates: [],
         scannedAt: Date.now(),
       },
-      tab.id,
+      tabId,
     );
-    await openResults(scanId);
+    return { ok: false, error: 'failed', scanId };
   }
 }
 
@@ -105,14 +108,14 @@ async function handleRescanFullPage(sourceTabId) {
 }
 
 // --- Wiring -----------------------------------------------------------------
-chrome.action.onClicked.addListener((tab) => {
-  handleActionClick(tab).catch((e) => console.error('[BID] action click failed', e));
-});
-
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (!msg || typeof msg.type !== 'string') return;
 
   switch (msg.type) {
+    case 'POPUP_SCAN':
+      scanActiveTabAndStore(msg.tabId, msg.url, !!msg.fullPage).then(sendResponse);
+      return true; // async response
+
     case MSG.OPEN_OPTIONS:
       chrome.runtime.openOptionsPage();
       sendResponse({ ok: true });

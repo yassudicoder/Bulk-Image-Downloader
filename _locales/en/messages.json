@@ -257,8 +257,35 @@
   "analyticsPromptYes": { "message": "Allow", "description": "Opt in to analytics." },
   "analyticsPromptNo": { "message": "No thanks", "description": "Decline analytics." },
 
+  "popupTitle": { "message": "Bulk Image Downloader", "description": "Popup header / title." },
+  "popupScanning": { "message": "Scanning this page…", "description": "Popup while the quick scan runs." },
+  "popupScanningFull": { "message": "Scanning the full page…", "description": "Popup while the full-page scan runs." },
+  "popupFoundOne": { "message": "image on this page", "description": "Popup count label, singular (number shown separately)." },
+  "popupFoundOther": { "message": "images on this page", "description": "Popup count label, plural (number shown separately)." },
+  "popupFrom": {
+    "message": "from $host$",
+    "description": "Popup sub-line: the page the images came from.",
+    "placeholders": { "host": { "content": "$1", "example": "unsplash.com" } }
+  },
+  "popupNoImages": { "message": "No images found here. Some load only as you scroll — try a full-page scan.", "description": "Popup when the quick scan found nothing." },
+  "popupViewResults": { "message": "View Results", "description": "Opens the full results page." },
+  "popupScanFull": { "message": "Scan Full Page", "description": "Scrolls the page to load lazy images, then re-scans." },
+  "popupRestricted": { "message": "This page can't be scanned. Browser pages and the Web Store are off-limits to all extensions.", "description": "Popup on a restricted page." },
+  "popupError": { "message": "Couldn't scan this page.", "description": "Popup on scan failure." },
+  "popupRetry": { "message": "Try again", "description": "Retries the scan from the popup." },
+  "popupPrivacyNote": { "message": "We only read this tab when you click the icon.", "description": "Popup privacy reassurance." },
+  "popupSettings": { "message": "Settings", "description": "Popup footer: open options." },
+  "popupHelp": { "message": "Help", "description": "Popup footer: open the welcome/help page." },
+
   "optionsDocTitle": { "message": "Options · Bulk Image Downloader", "description": "Options page tab title." },
   "optionsHeading": { "message": "Settings", "description": "Options page heading." },
+  "optionsAppearanceSection": { "message": "Appearance", "description": "Theme settings section heading." },
+  "optionsThemeLabel": { "message": "Theme", "description": "Theme picker label." },
+  "optionsThemeHint": { "message": "Use a light or dark look, or follow your system setting.", "description": "Theme picker help text." },
+  "optionsThemeSystem": { "message": "System", "description": "Theme option: follow the OS." },
+  "optionsThemeLight": { "message": "Light", "description": "Theme option: always light." },
+  "optionsThemeDark": { "message": "Dark", "description": "Theme option: always dark." },
+
   "optionsDedupeSection": { "message": "Duplicate detection", "description": "Dedupe settings section." },
   "optionsDedupeThreshold": { "message": "Near-duplicate sensitivity", "description": "Dedupe threshold label." },
   "optionsDedupeThresholdHint": {

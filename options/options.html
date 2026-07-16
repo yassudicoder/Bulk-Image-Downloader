@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="../shared/tokens.css">
   <link rel="stylesheet" href="../shared/base.css">
   <link rel="stylesheet" href="options.css">
+  <script src="../shared/theme.js"></script>
 </head>
 <body>
   <div class="bid-opt">
@@ -18,6 +19,24 @@
       </div>
       <span class="bid-badge bid-badge--muted" data-i18n="commonBeta">Beta</span>
     </header>
+
+    <!-- Appearance -->
+    <section class="bid-card">
+      <h2 data-i18n="optionsAppearanceSection">Appearance</h2>
+      <div class="bid-opt__row">
+        <div class="bid-opt__label">
+          <label data-i18n="optionsThemeLabel">Theme</label>
+          <p class="bid-hint" data-i18n="optionsThemeHint"></p>
+        </div>
+        <div class="bid-opt__control">
+          <div id="themeSeg" class="bid-seg" role="radiogroup" aria-label="Theme">
+            <button type="button" class="bid-seg__btn" role="radio" aria-checked="false" data-theme-value="auto" data-i18n="optionsThemeSystem">System</button>
+            <button type="button" class="bid-seg__btn" role="radio" aria-checked="false" data-theme-value="light" data-i18n="optionsThemeLight">Light</button>
+            <button type="button" class="bid-seg__btn" role="radio" aria-checked="false" data-theme-value="dark" data-i18n="optionsThemeDark">Dark</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- Duplicate detection -->
     <section class="bid-card">
