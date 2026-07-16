@@ -118,6 +118,52 @@ body {
 .bid-dup-thresh .bid-slider-end { font-size: var(--bid-fs-xs); color: var(--bid-text-faint); }
 .bid-dup-thresh output { min-width: 2ch; text-align: right; color: var(--bid-text-muted); font-variant-numeric: tabular-nums; }
 
+/* Duplicates tab: group cards --------------------------------------------- */
+.bid-dupgroups { flex: 1 1 auto; overflow-y: auto; padding: var(--bid-space-3); display: flex; flex-direction: column; gap: var(--bid-space-3); }
+.bid-dupgroups[hidden] { display: none; }
+.bid-dupmeta { font-size: var(--bid-fs-sm); color: var(--bid-text-muted); font-variant-numeric: tabular-nums; margin: 0; }
+.bid-dupgroups__empty { padding: var(--bid-space-6); text-align: center; }
+.bid-dupgroup {
+  border: 1px solid var(--bid-border); border-radius: var(--bid-radius-lg);
+  background: var(--bid-surface); box-shadow: var(--bid-shadow-sm);
+  padding: var(--bid-space-3); display: flex; flex-direction: column; gap: var(--bid-space-3);
+}
+.bid-dupgroup__head { display: flex; align-items: center; gap: var(--bid-space-2); }
+.bid-dupgroup__title { font-weight: 600; font-size: var(--bid-fs-md); }
+.bid-dupgroup__count { font-size: var(--bid-fs-sm); color: var(--bid-text-muted); }
+.bid-dupgroup__best { margin-left: auto; }
+.bid-dupgroup__items { display: flex; flex-wrap: wrap; gap: var(--bid-space-3); }
+
+.bid-dupitem {
+  position: relative; width: 108px; height: 108px; padding: 0; margin: 0;
+  border: 2px solid transparent; border-radius: var(--bid-radius);
+  background: repeating-conic-gradient(var(--bid-surface-2) 0% 25%, var(--bid-surface-3) 0% 50%) 50% / 14px 14px;
+  cursor: pointer; overflow: hidden;
+  transition: border-color var(--bid-transition), box-shadow var(--bid-transition);
+}
+.bid-dupitem:hover { box-shadow: var(--bid-shadow); }
+.bid-dupitem.is-selected, .bid-dupitem.is-keeper { border-color: var(--bid-accent); }
+.bid-dupitem:focus-visible { outline: none; box-shadow: var(--bid-focus-ring); }
+.bid-dupitem__thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bid-dupitem.is-broken .bid-dupitem__thumb { opacity: 0; }
+.bid-dupitem__dims {
+  position: absolute; left: 4px; bottom: 4px; z-index: 2;
+  background: var(--bid-badge-bg); color: var(--bid-badge-fg);
+  font-size: 10px; font-variant-numeric: tabular-nums; padding: 1px 5px; border-radius: var(--bid-radius-pill);
+}
+.bid-dupitem__keep { position: absolute; top: 4px; left: 4px; z-index: 2; background: var(--bid-accent); color: var(--bid-accent-fg); }
+/* selection tick (top-right), filled + checkmark when selected */
+.bid-dupitem::after {
+  content: ""; position: absolute; top: 4px; right: 4px; z-index: 2;
+  width: 18px; height: 18px; border-radius: var(--bid-radius-sm);
+  background: rgba(255, 255, 255, 0.9); border: 1.5px solid rgba(255, 255, 255, 0.9); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.bid-dupitem.is-selected::after { background: var(--bid-accent); border-color: var(--bid-accent); }
+.bid-dupitem.is-selected::before {
+  content: ""; position: absolute; top: 7px; right: 10px; z-index: 3;
+  width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+
 /* Virtualized grid -------------------------------------------------------- */
 .bid-grid-scroll { position: relative; flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: var(--bid-space-3); outline: none; }
 .bid-grid-sizer { position: relative; width: 100%; }

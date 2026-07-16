@@ -13,6 +13,7 @@
   const $ = (id) => document.getElementById(id);
   const gridScroll = $('gridScroll');
   const gridSizer = $('gridSizer');
+  const dupGroups = $('dupGroups');
   const emptyState = $('emptyState');
   const errorState = $('errorState');
   const countLabel = $('countLabel');
@@ -163,7 +164,14 @@
     }
     filtered = sortFiltered(view, currentSort());
     filterCount.textContent = t('filterShownOfTotal', [String(filtered.length), String(candidates.length)]);
-    grid.setItems(filtered);
+
+    // The Duplicates tab shows per-group cards; every other view uses the flat grid.
+    const groupView = (dupView === 'dup' && dedupeComputed);
+    gridScroll.hidden = groupView;
+    if (dupGroups) dupGroups.hidden = !groupView;
+    if (groupView) renderDupGroups(base);
+    else grid.setItems(filtered);
+
     BID.analytics.capture(BID.analytics.EVENTS.FILTER_APPLIED, { count: filtered.length });
   }
 
@@ -190,17 +198,30 @@
   function toggleSelect(id) {
     if (selection.has(id)) selection.delete(id); else selection.add(id);
     grid.refreshSelection();
+    syncDupGroupSelection();
     updateFooter();
   }
   function selectAllFiltered() {
     for (const c of filtered) selection.add(c.id);
     grid.refreshSelection();
+    syncDupGroupSelection();
     updateFooter();
   }
   function clearSelection() {
     selection.clear();
     grid.refreshSelection();
+    syncDupGroupSelection();
     updateFooter();
+  }
+
+  // Keep the group-card checks in sync when selection changes outside the group view.
+  function syncDupGroupSelection() {
+    if (!dupGroups || dupGroups.hidden) return;
+    dupGroups.querySelectorAll('.bid-dupitem').forEach((el) => {
+      const on = selection.has(el.dataset.id);
+      el.classList.toggle('is-selected', on);
+      el.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
   }
 
   function selectedCandidates() {
@@ -543,6 +564,119 @@
     v = parseInt(v, 10);
     if (isNaN(v)) v = DEFAULTS.dedupeHammingThreshold;
     return Math.max(0, Math.min(16, v));
+  }
+
+  // --- Duplicates group cards ------------------------------------------------
+  // Build the near-duplicate groups (>= 2 members) from the base-filtered set, keeper
+  // (largest) first within each group and largest groups first.
+  function groupsFrom(list) {
+    const map = new Map();
+    for (const c of list) {
+      if (c._dupGroup == null) continue;
+      let arr = map.get(c._dupGroup);
+      if (!arr) { arr = []; map.set(c._dupGroup, arr); }
+      arr.push(c);
+    }
+    const groups = [];
+    for (const arr of map.values()) {
+      if (arr.length < 2) continue;
+      arr.sort((a, b) => (areaOf(b) - areaOf(a)) || a.domIndex - b.domIndex);
+      groups.push(arr);
+    }
+    groups.sort((a, b) => (b.length - a.length) || (a[0].domIndex - b[0].domIndex));
+    return groups;
+  }
+
+  function renderDupGroups(base) {
+    if (!dupGroups) return;
+    const groups = groupsFrom(base);
+    dupGroups.textContent = '';
+
+    const meta = document.createElement('p');
+    meta.className = 'bid-dupmeta';
+    meta.textContent = t('dupGroupsMeta', [String(groups.length), String(currentThreshold())]);
+    dupGroups.appendChild(meta);
+
+    if (!groups.length) {
+      const empty = document.createElement('p');
+      empty.className = 'bid-hint bid-dupgroups__empty';
+      empty.textContent = t('dupGroupsEmpty');
+      dupGroups.appendChild(empty);
+      return;
+    }
+    groups.forEach((members, gi) => dupGroups.appendChild(buildGroupCard(members, gi)));
+  }
+
+  function buildGroupCard(members, gi) {
+    const card = document.createElement('div');
+    card.className = 'bid-dupgroup';
+
+    const head = document.createElement('div');
+    head.className = 'bid-dupgroup__head';
+    const title = document.createElement('span');
+    title.className = 'bid-dupgroup__title';
+    title.textContent = t('dupGroupTitle', String(gi + 1));
+    const count = document.createElement('span');
+    count.className = 'bid-dupgroup__count';
+    count.textContent = members.length === 1 ? t('dupGroupCopiesOne') : t('dupGroupCopies', String(members.length));
+    const best = document.createElement('button');
+    best.type = 'button';
+    best.className = 'bid-btn bid-btn--sm bid-dupgroup__best';
+    best.textContent = t('dupGroupKeepBest');
+    best.addEventListener('click', () => keepBest(members, card));
+    head.append(title, count, best);
+
+    const strip = document.createElement('div');
+    strip.className = 'bid-dupgroup__items';
+    members.forEach((item, mi) => strip.appendChild(buildDupItem(item, mi === 0)));
+
+    card.append(head, strip);
+    return card;
+  }
+
+  function buildDupItem(item, isKeeper) {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'bid-dupitem' + (isKeeper ? ' is-keeper' : '');
+    el.dataset.id = item.id;
+    el.classList.toggle('is-selected', selection.has(item.id));
+    el.setAttribute('aria-pressed', selection.has(item.id) ? 'true' : 'false');
+
+    const img = document.createElement('img');
+    img.className = 'bid-dupitem__thumb';
+    img.loading = 'lazy'; img.decoding = 'async'; img.alt = item.alt || '';
+    img.src = item.url;
+    img.onerror = () => { el.classList.add('is-broken'); };
+    el.appendChild(img);
+
+    const w = item.naturalWidth || item.displayWidth || 0, h = item.naturalHeight || item.displayHeight || 0;
+    if (w && h) {
+      const dims = document.createElement('span');
+      dims.className = 'bid-dupitem__dims';
+      dims.textContent = w + '×' + h;
+      el.appendChild(dims);
+    }
+    if (isKeeper) {
+      const kb = document.createElement('span');
+      kb.className = 'bid-badge bid-dupitem__keep';
+      kb.textContent = t('dupGroupKeep');
+      el.appendChild(kb);
+    }
+    el.title = item.filename || item.url || '';
+    el.addEventListener('click', () => toggleSelect(item.id)); // toggleSelect syncs the card
+    return el;
+  }
+
+  // "Keep best": select the largest copy, deselect the rest of the group.
+  function keepBest(members, card) {
+    members.forEach((item, i) => { if (i === 0) selection.add(item.id); else selection.delete(item.id); });
+    grid.refreshSelection();
+    updateFooter();
+    card.querySelectorAll('.bid-dupitem').forEach((el) => {
+      const on = selection.has(el.dataset.id);
+      el.classList.toggle('is-selected', on);
+      el.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
   }
 
   // Tab counts reflect the current base-filtered set. Dup/Unique stay blank until hashing runs.

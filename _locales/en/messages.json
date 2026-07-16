@@ -144,6 +144,25 @@
   "dupTabDuplicates": { "message": "Duplicates", "description": "Duplicate view tab: show only images that have near-duplicates." },
   "dupTabUnique": { "message": "Unique", "description": "Duplicate view tab: collapse each duplicate group to one image." },
   "dupThresholdLabel": { "message": "Match sensitivity", "description": "Label for the duplicate-similarity slider in the results toolbar." },
+  "dupGroupsMeta": {
+    "message": "$groups$ duplicate groups · dHash 64-bit · threshold ≤ $t$",
+    "description": "Summary line above the duplicate group cards.",
+    "placeholders": { "groups": { "content": "$1", "example": "92" }, "t": { "content": "$2", "example": "6" } }
+  },
+  "dupGroupsEmpty": { "message": "No duplicate groups at this sensitivity.", "description": "Shown on the Duplicates tab when nothing groups." },
+  "dupGroupTitle": {
+    "message": "Group $n$",
+    "description": "Heading for one duplicate group card.",
+    "placeholders": { "n": { "content": "$1", "example": "1" } }
+  },
+  "dupGroupCopies": {
+    "message": "$n$ copies",
+    "description": "Member count of a duplicate group.",
+    "placeholders": { "n": { "content": "$1", "example": "4" } }
+  },
+  "dupGroupCopiesOne": { "message": "1 copy", "description": "Singular member count of a duplicate group." },
+  "dupGroupKeepBest": { "message": "Keep best", "description": "Button: select the largest copy and deselect the rest of the group." },
+  "dupGroupKeep": { "message": "Keep", "description": "Badge marking the recommended (largest) copy in a group." },
   "filterOnlyThisPage": { "message": "Only from this page", "description": "Filter toggle: images hosted on the scanned site only." },
   "filterOnlyThisPageHint": { "message": "Show only images hosted on this site — hides third-party / CDN images.", "description": "Tooltip for the only-this-page filter." },
   "filterReset": { "message": "Reset filters", "description": "Clears all filters." },
