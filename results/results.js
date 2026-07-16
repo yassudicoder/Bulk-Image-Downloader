@@ -48,8 +48,10 @@
   let grid = null;
   let settings = {};
   let dedupeComputed = false;   // whether _dupGroup tags are current for this candidate set
+  let cachedHashed = null;      // last hashAll() result, reused when the threshold slider re-groups
+  let dupView = 'all';          // duplicate view: 'all' | 'dup' | 'unique'
+  let deduping = false;         // guard against overlapping perceptual-hash runs
   let pageHost = '';            // hostname of the scanned page (for "only from this page")
-  let lastDupRes = null;        // last dedupe result, so the sidebar note survives a filter reset
   let folderRules = [];         // Download-folder routing rules (from options)
 
   const SOURCE_LABEL_KEY = {
@@ -144,7 +146,6 @@
       fileType: $('fileType').value,
       domain: $('domain').value,
       nameContains: $('nameContains').value,
-      hideDuplicates: $('hideDuplicates').checked,
       onlyThisPage: $('onlyThisPage').checked,
       pageHost: pageHost,
     });
@@ -153,9 +154,14 @@
   const applyFiltersDebounced = debounce(applyFilters, 160);
   function applyFilters() {
     readFilterState();
-    filtered = BID.filters.apply(candidates, filterState);
-    if (filterState.hideDuplicates && dedupeComputed) filtered = collapseDuplicates(filtered);
-    filtered = sortFiltered(filtered, currentSort());
+    const base = BID.filters.apply(candidates, filterState);
+    updateTabCounts(base);
+    let view = base;
+    if (dedupeComputed) {
+      if (dupView === 'unique') view = collapseDuplicates(base);
+      else if (dupView === 'dup') view = base.filter((c) => c._dupGroup != null);
+    }
+    filtered = sortFiltered(view, currentSort());
     filterCount.textContent = t('filterShownOfTotal', [String(filtered.length), String(candidates.length)]);
     grid.setItems(filtered);
     BID.analytics.capture(BID.analytics.EVENTS.FILTER_APPLIED, { count: filtered.length });
@@ -246,14 +252,17 @@
 
   function render() {
     updateHeader();
+    const dupBar = $('dupBar');
     if (!candidates.length) {
       gridScroll.hidden = true;
+      if (dupBar) dupBar.hidden = true;
       emptyState.hidden = false;
       return;
     }
     emptyState.hidden = true;
     errorState.hidden = true;
     gridScroll.hidden = false;
+    if (dupBar) dupBar.hidden = false;
     applyFilters();
     updateFooter();
   }
@@ -437,33 +446,48 @@
     return { ok, errored };
   }
 
-  // --- Hide duplicates -------------------------------------------------------
-  async function onToggleDedupe() {
-    const cb = $('hideDuplicates');
-    if (cb.checked && !dedupeComputed) {
-      cb.disabled = true;
-      try {
-        lastDupRes = await runDedupe();
-        updateDupNote(lastDupRes);
-        showToast(lastDupRes.dupCount ? t('dedupeHidden', String(lastDupRes.dupCount)) : t('dedupeNone'));
-      } catch (_) {
-        showToast(t('dedupeFailed'));
-        cb.checked = false;
-      } finally {
-        cb.disabled = false;
-        setBusy(false);
-      }
-    } else if (cb.checked && lastDupRes) {
-      updateDupNote(lastDupRes);           // re-show the note when re-enabled after a reset
-    } else if (!cb.checked) {
-      const n = $('dupHiddenNote'); if (n) n.hidden = true;
+  // --- Duplicate view (All / Duplicates / Unique + live sensitivity) ---------
+  // Perceptual hashing is expensive (it fetches every image), so it runs lazily the first
+  // time the user opens a duplicate-aware tab; the slider then re-groups the cached hashes
+  // in place, with no re-fetch or re-hash.
+  function currentThreshold() {
+    const el = $('dupThreshold');
+    return clampThreshold(el ? el.value : settings.dedupeHammingThreshold);
+  }
+
+  async function setDupView(view) {
+    if (view !== 'all' && view !== 'dup' && view !== 'unique') return;
+    if (view === dupView) return;
+    // Duplicates / Unique need the perceptual hashes; compute them on first use.
+    if ((view === 'dup' || view === 'unique') && !dedupeComputed) {
+      const ok = await ensureDedupe();
+      if (!ok) return; // hashing failed or was cancelled — stay on the current tab
     }
+    dupView = view;
+    updateTabsUI();
     applyFilters();
     updateFooter();
   }
 
+  async function ensureDedupe() {
+    if (deduping) return false;
+    deduping = true;
+    try {
+      const res = await runDedupe();
+      if (res && res.limited) showToast(t('dedupeLimited'));
+      return true;
+    } catch (_) {
+      showToast(t('dedupeFailed'));
+      return false;
+    } finally {
+      deduping = false;
+      setBusy(false);
+    }
+  }
+
   async function runDedupe() {
     for (const c of candidates) { c._dupGroup = null; c._dupBytes = 0; }
+    cachedHashed = null;
     setBusy(true, t('dedupePreparing', String(candidates.length)));
 
     const { ok } = await fetchBytesHybrid(candidates,
@@ -472,12 +496,21 @@
 
     const hashed = await BID.dedupe.hashAll(ok,
       { onProgress: (d, tot) => setBusy(true, t('dedupeComparing', [String(d), String(tot)])) });
-    const threshold = clampThreshold(settings.dedupeHammingThreshold);
-    const res = BID.dedupe.markDuplicates(hashed, threshold);
+    cachedHashed = hashed;
+    const res = BID.dedupe.markDuplicates(hashed, currentThreshold());
     dedupeComputed = true;
     BID.analytics.capture(BID.analytics.EVENTS.DEDUPE_RUN, { count: res.dupCount, total: candidates.length });
     return res;
   }
+
+  // Re-group already-hashed images at a new threshold — cheap, so it can run on slider drag.
+  function regroupAtThreshold() {
+    if (!dedupeComputed || !cachedHashed) return;
+    BID.dedupe.markDuplicates(cachedHashed, currentThreshold());
+    applyFilters();
+    updateFooter();
+  }
+  const regroupDebounced = debounce(regroupAtThreshold, 120);
 
   // Collapse duplicate groups in the visible list: keep the largest member present, drop
   // the rest. Choosing the representative from what's already visible means a group never
@@ -512,20 +545,33 @@
     return Math.max(0, Math.min(16, v));
   }
 
-  function updateDupNote(res) {
-    const note = $('dupHiddenNote');
-    if (!note) return;
-    note.hidden = false;
-    if (res.limited) note.textContent = t('dedupeLimited');
-    else note.textContent = res.dupCount ? t('dedupeNoteHidden', String(res.dupCount)) : t('dedupeNoteNone');
+  // Tab counts reflect the current base-filtered set. Dup/Unique stay blank until hashing runs.
+  function updateTabCounts(base) {
+    const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+    set('tabCountAll', String(base.length));
+    if (dedupeComputed) {
+      set('tabCountDup', String(base.filter((c) => c._dupGroup != null).length));
+      set('tabCountUnique', String(collapseDuplicates(base).length));
+    } else {
+      set('tabCountDup', '');
+      set('tabCountUnique', '');
+    }
+  }
+
+  function updateTabsUI() {
+    for (const tab of document.querySelectorAll('.bid-dup-tab')) {
+      const on = tab.getAttribute('data-dup-view') === dupView;
+      tab.classList.toggle('is-active', on);
+      tab.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
   }
 
   function resetDedupeState() {
     dedupeComputed = false;
-    lastDupRes = null;
+    cachedHashed = null;
+    dupView = 'all';
     for (const c of candidates) c._dupGroup = null;
-    const cb = $('hideDuplicates'); if (cb) cb.checked = false;
-    const note = $('dupHiddenNote'); if (note) note.hidden = true;
+    updateTabsUI();
   }
 
   // --- Full-page rescan ------------------------------------------------------
@@ -575,14 +621,11 @@
       $(id).addEventListener('change', applyFilters);
     });
     $('nameContains').addEventListener('input', applyFiltersDebounced);
-    $('hideDuplicates').addEventListener('change', onToggleDedupe);
     $('onlyThisPage').addEventListener('change', applyFilters);
     $('sortBy').addEventListener('change', applyFilters);
     $('resetFilters').addEventListener('click', () => {
       ['minWidth', 'minHeight', 'nameContains'].forEach((id) => { $(id).value = ''; });
-      $('fileType').value = ''; $('domain').value = '';
-      $('hideDuplicates').checked = false; $('onlyThisPage').checked = false;
-      const n = $('dupHiddenNote'); if (n) n.hidden = true;
+      $('fileType').value = ''; $('domain').value = ''; $('onlyThisPage').checked = false;
       applyFilters();
     });
     $('selectAllBtn').addEventListener('click', selectAllFiltered);
@@ -590,10 +633,33 @@
     downloadBtn.addEventListener('click', () => downloadItems(selectedCandidates()));
     downloadZipBtn.addEventListener('click', zipSelected);
 
+    setupDupControls();
+
     const thumb = $('thumbSize');
     thumb.addEventListener('input', () => grid.setThumbSize(parseInt(thumb.value, 10)));
     thumb.addEventListener('change', async () => {
       settings = Object.assign({}, settings, { thumbSize: parseInt(thumb.value, 10) });
+      try { await chrome.storage.local.set({ [STORAGE.settings]: settings }); } catch (_) {}
+    });
+  }
+
+  // Duplicate-view tabs + sensitivity slider (the toolbar above the grid).
+  function setupDupControls() {
+    for (const tab of document.querySelectorAll('.bid-dup-tab')) {
+      tab.addEventListener('click', () => setDupView(tab.getAttribute('data-dup-view')));
+    }
+    const thresh = $('dupThreshold');
+    if (!thresh) return;
+    const init = clampThreshold(settings.dedupeHammingThreshold);
+    thresh.value = String(init);
+    const out = $('dupThresholdVal'); if (out) out.textContent = String(init);
+    thresh.addEventListener('input', () => {
+      const v = clampThreshold(thresh.value);
+      const o = $('dupThresholdVal'); if (o) o.textContent = String(v);
+      regroupDebounced();
+    });
+    thresh.addEventListener('change', async () => {
+      settings = Object.assign({}, settings, { dedupeHammingThreshold: clampThreshold(thresh.value) });
       try { await chrome.storage.local.set({ [STORAGE.settings]: settings }); } catch (_) {}
     });
   }

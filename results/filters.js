@@ -8,7 +8,7 @@
   g.BID = g.BID || {};
 
   const EMPTY_STATE = Object.freeze({
-    minWidth: 0, minHeight: 0, fileType: '', domain: '', nameContains: '', hideDuplicates: false,
+    minWidth: 0, minHeight: 0, fileType: '', domain: '', nameContains: '',
     onlyThisPage: false, pageHost: '',
   });
 
@@ -52,7 +52,6 @@
     s.fileType = String(s.fileType || '');
     s.domain = String(s.domain || '');
     s.nameContains = String(s.nameContains || '').trim().toLowerCase();
-    s.hideDuplicates = !!s.hideDuplicates;
     s.onlyThisPage = !!s.onlyThisPage;
     s.pageHost = String(s.pageHost || '').toLowerCase();
     return s;
@@ -61,7 +60,7 @@
   function isEmpty(state) {
     const s = normalizeState(state);
     return !s.minWidth && !s.minHeight && !s.fileType && !s.domain && !s.nameContains
-      && !s.hideDuplicates && !s.onlyThisPage;
+      && !s.onlyThisPage;
   }
 
   function predicate(state) {
@@ -80,7 +79,7 @@
         const hay = ((c.filename || '') + ' ' + (c.alt || '') + ' ' + (c.url || '')).toLowerCase();
         if (hay.indexOf(s.nameContains) === -1) return false;
       }
-      // hideDuplicates is applied by the results controller (collapse over the visible list).
+      // Duplicate grouping (the Duplicates/Unique views) is applied by the results controller.
       return true;
     };
   }

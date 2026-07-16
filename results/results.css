@@ -65,7 +65,6 @@ body {
 .bid-input-suffix { position: relative; display: flex; align-items: center; }
 .bid-input-suffix input { padding-right: 26px; }
 .bid-input-suffix span { position: absolute; right: var(--bid-space-2); color: var(--bid-text-faint); font-size: var(--bid-fs-sm); pointer-events: none; }
-.bid-dup-block { display: flex; flex-direction: column; gap: var(--bid-space-1); }
 .bid-hint { font-size: var(--bid-fs-sm); color: var(--bid-text-faint); margin: 0; }
 .bid-dup-note { color: var(--bid-accent); font-weight: 500; }
 .bid-sidebar__row { display: flex; align-items: center; justify-content: space-between; gap: var(--bid-space-2); }
@@ -88,6 +87,39 @@ body {
 .bid-banner__body strong { display: block; margin-bottom: 2px; }
 .bid-banner__body p { margin: 0; font-size: var(--bid-fs-sm); color: var(--bid-text-muted); }
 .bid-banner__actions { display: flex; gap: var(--bid-space-2); margin-left: auto; flex-shrink: 0; }
+
+/* Duplicate view toolbar (tabs + sensitivity) ----------------------------- */
+.bid-dupbar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--bid-space-3);
+  padding: var(--bid-space-2) var(--bid-space-3);
+  border-bottom: 1px solid var(--bid-border);
+  background: var(--bid-surface);
+}
+.bid-dupbar[hidden] { display: none; }
+.bid-dup-tabs {
+  display: inline-flex; gap: 2px; padding: 2px;
+  background: var(--bid-surface-2); border-radius: var(--bid-radius);
+}
+.bid-dup-tab {
+  appearance: none; border: none; background: transparent; cursor: pointer;
+  color: var(--bid-text-muted); font: inherit; font-size: var(--bid-fs-md); font-weight: 500;
+  padding: var(--bid-space-1) var(--bid-space-3); border-radius: var(--bid-radius-sm);
+  display: inline-flex; align-items: center; gap: var(--bid-space-1);
+  transition: background var(--bid-transition), color var(--bid-transition);
+}
+.bid-dup-tab:hover { color: var(--bid-text); }
+.bid-dup-tab.is-active { background: var(--bid-surface); color: var(--bid-text); box-shadow: var(--bid-shadow-sm); }
+.bid-dup-tab:focus-visible { outline: none; box-shadow: var(--bid-focus-ring); }
+.bid-dup-tab__count { font-size: var(--bid-fs-xs); font-variant-numeric: tabular-nums; color: var(--bid-text-faint); }
+.bid-dup-tab.is-active .bid-dup-tab__count { color: var(--bid-accent); }
+.bid-dup-thresh {
+  display: flex; align-items: center; gap: var(--bid-space-2); margin-left: auto;
+  color: var(--bid-text-muted); font-size: var(--bid-fs-sm);
+}
+.bid-dup-thresh label { font-weight: 500; }
+.bid-dup-thresh input[type="range"] { width: 120px; accent-color: var(--bid-accent); }
+.bid-dup-thresh .bid-slider-end { font-size: var(--bid-fs-xs); color: var(--bid-text-faint); }
+.bid-dup-thresh output { min-width: 2ch; text-align: right; color: var(--bid-text-muted); font-variant-numeric: tabular-nums; }
 
 /* Virtualized grid -------------------------------------------------------- */
 .bid-grid-scroll { position: relative; flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: var(--bid-space-3); outline: none; }

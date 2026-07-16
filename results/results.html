@@ -95,15 +95,6 @@
         <input id="nameContains" class="bid-input" type="text" data-i18n-placeholder="filterNamePlaceholder">
       </div>
 
-      <div class="bid-dup-block">
-        <label class="bid-checkbox" title="" data-i18n-title="filterHideDuplicatesHint">
-          <input type="checkbox" id="hideDuplicates">
-          <span data-i18n="filterHideDuplicates">Hide duplicates</span>
-        </label>
-        <p class="bid-hint" data-i18n="filterHideDuplicatesHint">Compares images and hides near-duplicates.</p>
-        <p id="dupHiddenNote" class="bid-hint bid-dup-note" hidden></p>
-      </div>
-
       <label class="bid-checkbox" title="" data-i18n-title="filterOnlyThisPageHint">
         <input type="checkbox" id="onlyThisPage">
         <span data-i18n="filterOnlyThisPage">Only from this page</span>
@@ -131,6 +122,30 @@
         <div class="bid-banner__actions">
           <button id="analyticsNo" class="bid-btn bid-btn--ghost bid-btn--sm" data-i18n="analyticsPromptNo">No thanks</button>
           <button id="analyticsYes" class="bid-btn bid-btn--primary bid-btn--sm" data-i18n="analyticsPromptYes">Allow</button>
+        </div>
+      </div>
+
+      <div id="dupBar" class="bid-dupbar" hidden>
+        <div id="dupTabs" class="bid-dup-tabs" role="group" aria-label="Duplicate view" data-i18n-aria-label="dupBarLabel">
+          <button type="button" class="bid-dup-tab is-active" data-dup-view="all" aria-pressed="true">
+            <span data-i18n="dupTabAll">All</span>
+            <span id="tabCountAll" class="bid-dup-tab__count"></span>
+          </button>
+          <button type="button" class="bid-dup-tab" data-dup-view="dup" aria-pressed="false">
+            <span data-i18n="dupTabDuplicates">Duplicates</span>
+            <span id="tabCountDup" class="bid-dup-tab__count"></span>
+          </button>
+          <button type="button" class="bid-dup-tab" data-dup-view="unique" aria-pressed="false">
+            <span data-i18n="dupTabUnique">Unique</span>
+            <span id="tabCountUnique" class="bid-dup-tab__count"></span>
+          </button>
+        </div>
+        <div class="bid-dup-thresh">
+          <label for="dupThreshold" data-i18n="dupThresholdLabel">Match sensitivity</label>
+          <span class="bid-slider-end" data-i18n="optionsDedupeStrict">Stricter</span>
+          <input id="dupThreshold" type="range" min="0" max="16" step="1" value="6" data-i18n-aria-label="dupThresholdLabel">
+          <span class="bid-slider-end" data-i18n="optionsDedupeLoose">Looser</span>
+          <output id="dupThresholdVal" class="bid-mono">6</output>
         </div>
       </div>
 
