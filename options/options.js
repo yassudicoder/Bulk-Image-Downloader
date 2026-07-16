@@ -37,6 +37,16 @@
     await BID.analytics._hydrate();
     try { const s = await chrome.storage.local.get(STORAGE.settings); settings = s[STORAGE.settings] || {}; } catch (_) { settings = {}; }
 
+    // Single-tab UX: when Settings was opened from a scan, offer a way back to it.
+    const scanParam = new URLSearchParams(location.search).get('scan');
+    if (scanParam) {
+      const back = $('backToResults');
+      back.hidden = false;
+      back.addEventListener('click', () => {
+        location.href = chrome.runtime.getURL('results/results.html') + '?scan=' + encodeURIComponent(scanParam);
+      });
+    }
+
     // Dedupe threshold
     const thr = $('dedupeThreshold');
     const thrVal = $('dedupeThresholdVal');

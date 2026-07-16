@@ -107,6 +107,42 @@ async function handleRescanFullPage(sourceTabId) {
   }
 }
 
+// --- Single-tab app navigation ----------------------------------------------
+// The whole extension UI (results + options + welcome) lives in ONE reusable tab, so
+// clicking the icon or Settings never spawns a pile of tabs. We remember the tab id in
+// session storage and navigate it in place; if it's gone, we open a fresh one. This needs
+// no "tabs" permission — we track the id and never read tab URLs/titles.
+const APP_TAB_KEY = 'bid:appTabId';
+
+function appPath(view, scanId) {
+  const q = scanId ? ('?scan=' + encodeURIComponent(scanId)) : '';
+  switch (view) {
+    case 'options': return 'options/options.html' + q;
+    case 'welcome': return 'welcome/welcome.html';
+    case 'results':
+    default: return 'results/results.html' + q;
+  }
+}
+
+async function openAppView(view, scanId) {
+  const url = chrome.runtime.getURL(appPath(view, scanId));
+  let id = null;
+  try { const g = await chrome.storage.session.get(APP_TAB_KEY); id = g[APP_TAB_KEY]; } catch (_) { id = null; }
+
+  if (id != null) {
+    try {
+      const tab = await chrome.tabs.get(id);          // throws if the tab is gone
+      await chrome.tabs.update(id, { url, active: true });
+      if (tab && tab.windowId != null) { try { await chrome.windows.update(tab.windowId, { focused: true }); } catch (_) {} }
+      return id;
+    } catch (_) { /* tab no longer exists — fall through and create one */ }
+  }
+
+  const created = await chrome.tabs.create({ url });
+  try { await chrome.storage.session.set({ [APP_TAB_KEY]: created.id }); } catch (_) {}
+  return created.id;
+}
+
 // --- Wiring -----------------------------------------------------------------
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (!msg || typeof msg.type !== 'string') return;
@@ -114,6 +150,11 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   switch (msg.type) {
     case 'POPUP_SCAN':
       scanActiveTabAndStore(msg.tabId, msg.url, !!msg.fullPage).then(sendResponse);
+      return true; // async response
+
+    case 'OPEN_APP_VIEW':
+      openAppView(msg.view, msg.scanId).then((id) => sendResponse({ ok: true, tabId: id }))
+        .catch(() => sendResponse({ ok: false }));
       return true; // async response
 
     case MSG.OPEN_OPTIONS:
@@ -138,7 +179,15 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       });
     } catch (_) { /* ignore */ }
     try {
-      await chrome.tabs.create({ url: chrome.runtime.getURL('welcome/welcome.html') });
+      await openAppView('welcome');
     } catch (_) { /* ignore */ }
   }
+});
+
+// Forget the app tab when it closes so the next open starts fresh.
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+  try {
+    const g = await chrome.storage.session.get(APP_TAB_KEY);
+    if (g[APP_TAB_KEY] === tabId) await chrome.storage.session.remove(APP_TAB_KEY);
+  } catch (_) { /* ignore */ }
 });

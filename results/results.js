@@ -554,7 +554,12 @@
   function setupStaticControls() {
     $('scanFullPageBtn').addEventListener('click', rescanFullPage);
     $('emptyScanFullPage').addEventListener('click', rescanFullPage);
-    $('optionsBtn').addEventListener('click', () => { try { chrome.runtime.openOptionsPage(); } catch (_) {} });
+    $('optionsBtn').addEventListener('click', () => {
+      // Navigate this same tab to Settings (single-tab UX); pass the scan so Settings can
+      // offer "Back to results" without losing the current scan.
+      const sid = new URLSearchParams(location.search).get('scan') || '';
+      location.href = chrome.runtime.getURL('options/options.html') + (sid ? ('?scan=' + encodeURIComponent(sid)) : '');
+    });
 
     $('analyticsYes').addEventListener('click', () => { BID.analytics.setOptIn(true); hideAnalyticsPrompt(); });
     $('analyticsNo').addEventListener('click', () => { BID.analytics.setOptIn(false); hideAnalyticsPrompt(); });

@@ -76,25 +76,20 @@
     $('hostLine').hidden = !host;
   }
 
-  function openResults() {
-    if (!lastScanId) return;
-    const url = chrome.runtime.getURL('results/results.html') + '?scan=' + encodeURIComponent(lastScanId);
-    try { chrome.tabs.create({ url }); } catch (_) {}
+  // Open a view in the extension's single reusable tab. The worker does the tab work so it
+  // completes even though the popup closes immediately after (which would abort tabs calls
+  // made from here).
+  function openView(view, scanId) {
+    try { chrome.runtime.sendMessage({ type: 'OPEN_APP_VIEW', view: view, scanId: scanId || null }); } catch (_) {}
     window.close();
   }
 
   function boot() {
-    $('viewResults').addEventListener('click', openResults);
+    $('viewResults').addEventListener('click', () => { if (lastScanId) openView('results', lastScanId); });
     $('scanFull').addEventListener('click', () => runScan(true));
     $('retry').addEventListener('click', () => runScan(false));
-    $('settingsBtn').addEventListener('click', () => {
-      try { chrome.runtime.openOptionsPage(); } catch (_) {}
-      window.close();
-    });
-    $('helpBtn').addEventListener('click', () => {
-      try { chrome.tabs.create({ url: chrome.runtime.getURL('welcome/welcome.html') }); } catch (_) {}
-      window.close();
-    });
+    $('settingsBtn').addEventListener('click', () => openView('options', lastScanId));
+    $('helpBtn').addEventListener('click', () => openView('welcome'));
 
     runScan(false);
   }

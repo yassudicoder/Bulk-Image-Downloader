@@ -279,6 +279,7 @@
 
   "optionsDocTitle": { "message": "Options · Bulk Image Downloader", "description": "Options page tab title." },
   "optionsHeading": { "message": "Settings", "description": "Options page heading." },
+  "optionsBackToResults": { "message": "Back to results", "description": "Returns from Settings to the results view in the same tab." },
   "optionsAppearanceSection": { "message": "Appearance", "description": "Theme settings section heading." },
   "optionsThemeLabel": { "message": "Theme", "description": "Theme picker label." },
   "optionsThemeHint": { "message": "Use a light or dark look, or follow your system setting.", "description": "Theme picker help text." },
