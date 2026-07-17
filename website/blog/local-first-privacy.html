@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What a local-first extension can (and can't) see — Bulk Image Downloader</title>
+<meta name="description" content="The exact permission model behind Bulk Image Downloader: what the extension is able to do, what it deliberately can't, and how to verify it for yourself.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%2315803d'/%3E%3Cpath d='M12 4v9m0 0l-4-4m4 4l4-4M6 18h12' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="blog.css">
+</head>
+<body>
+
+<header class="nav"><div class="wrap nav__in">
+  <a class="brand" href="../index.html"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%2315803d'/%3E%3Cpath d='M12 4v9m0 0l-4-4m4 4l4-4M6 18h12' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" alt=""><span>Bulk Image Downloader</span></a>
+  <nav class="nav__links" aria-label="Primary">
+    <a href="../index.html#features">Features</a><a href="index.html" class="on">Blog</a><a href="../index.html#faq">FAQ</a><a href="../index.html#privacy">Privacy</a>
+  </nav>
+  <div class="nav__right"><a class="btn btn--primary btn--sm" href="../index.html">Add to Chrome</a></div>
+</div></header>
+
+<article class="article">
+  <a class="back" href="index.html">← All posts</a>
+  <header class="art-head">
+    <div class="cat">Privacy</div>
+    <h1>What a local-first extension can (and can't) see</h1>
+    <div class="art-meta">
+      <span class="who"><i></i> The TheOpenBox team</span>
+      <span class="dot"></span><span>Feb 9, 2026</span>
+      <span class="dot"></span><span>5 min read</span>
+    </div>
+  </header>
+
+  <div class="prose">
+    <p>"Privacy-first" is the easiest claim in software to make and the hardest to verify. An extension sits inside your browser, next to your email, your bank, and your DMs — so "just trust us" isn't good enough. Here's the concrete version: exactly what Bulk Image Downloader is able to do, and exactly what it can't.</p>
+
+    <h2>The one rule everything follows</h2>
+    <blockquote><p>The extension does nothing until you click its icon — and even then, only on the tab you clicked it on.</p></blockquote>
+    <p>There's no background process watching your browsing, no content script injected into every page you visit. It's inert until you deliberately invoke it, and then it looks at one tab: the one in front of you.</p>
+
+    <h2>What it <em>can</em> do — when you ask</h2>
+    <ul>
+      <li><strong>Read the current page to find images.</strong> When you click the icon, it scans that tab's DOM for image sources — <code>&lt;img&gt;</code>, <code>srcset</code>, CSS backgrounds, lazy-loaded and shadow-DOM images.</li>
+      <li><strong>Fetch image bytes on your device.</strong> To build a ZIP or to fingerprint images for duplicate detection, it downloads the image data into the page — the same bytes your browser already loaded — and works on them locally.</li>
+      <li><strong>Save files to your Downloads folder.</strong> That's the whole point. Downloads land where every other download does.</li>
+      <li><strong>Remember your settings.</strong> Your thumbnail size, sensitivity, and folder rules are stored in the browser's local storage, on your machine.</li>
+    </ul>
+
+    <h2>What it <em>can't</em> (and doesn't) do</h2>
+    <ul>
+      <li><strong>No uploads.</strong> There is no server. Images, filenames and URLs are never transmitted anywhere — there's nowhere for them to go.</li>
+      <li><strong>No account, no sign-in.</strong> Nothing ties what you do to an identity, because there's no identity to tie it to.</li>
+      <li><strong>No other tabs, no history.</strong> It can't read tabs you didn't invoke it on, and it never reads your browsing history or bookmarks.</li>
+      <li><strong>No always-on tracking.</strong> Because it isn't running in the background, there's nothing to track between the moments you use it.</li>
+    </ul>
+
+    <h2>The permissions, in plain words</h2>
+    <p>Chrome makes an extension declare what it needs. Here's the whole list and why each one is there:</p>
+    <ul>
+      <li><code>activeTab</code> — read the current tab, and only after you click. This is the narrow, on-demand permission, not blanket access to every site.</li>
+      <li><code>scripting</code> — run the small scan routine in that tab to collect image sources.</li>
+      <li><code>downloads</code> — save the files you pick.</li>
+      <li><code>storage</code> — keep your settings locally.</li>
+      <li><code>&lt;all_urls&gt;</code> <strong>(optional)</strong> — <em>not</em> granted up front. Some servers block cross-origin requests, so a handful of images can't be fetched for a ZIP or for de-duplication. Only then does the extension ask — with a clear prompt — whether you'd like to grant broader access to include them. Say no and it simply skips those images.</li>
+    </ul>
+
+    <div class="key"><p><strong>The optional permission is the important detail.</strong> A less careful extension would just request access to all sites on day one. This one waits until there's a concrete reason, explains it, and lets you decline.</p></div>
+
+    <h2>About analytics</h2>
+    <p>Usage stats are <strong>off by default</strong>. If you choose to turn them on, they're anonymous and content-free: counts and feature names only — "a ZIP was created", "duplicates were checked" — never a URL, a filename, or a pixel of an image. And it's a single switch to turn back off.</p>
+
+    <h2>Don't take our word for it</h2>
+    <p>The healthiest way to trust a local-first tool is to not have to. A couple of things you can check yourself:</p>
+    <ul>
+      <li>Open your browser's task manager or a network tool while you use the extension. You won't see it phoning home, because it doesn't.</li>
+      <li>The code is open source. The scanning, hashing and ZIP logic is all there to read — see the <a href="https://github.com/yassudicoder/Bulk-Image-Downloader">source on GitHub</a>.</li>
+    </ul>
+
+    <hr>
+    <p>Local-first isn't a slogan here; it's the architecture. There's no server to leak, no account to breach, and nothing to sell — because your images never leave your device in the first place.</p>
+  </div>
+</article>
+
+<div class="endcta"><div class="endcta__in">
+  <div><h3>Privacy you can actually verify.</h3><p>Free during the beta · no account · runs on your device.</p></div>
+  <a class="btn btn--primary" href="../index.html">Add to Chrome</a>
+</div></div>
+
+<footer class="foot"><div class="wrap foot__in">
+  <p>© 2026 Bulk Image Downloader · by TheOpenBox</p>
+  <div class="foot__links"><a href="../index.html#features">Features</a><a href="index.html">Blog</a><a href="../index.html#faq">FAQ</a><a href="../index.html#privacy">Privacy</a></div>
+</div></footer>
+
+</body>
+</html>

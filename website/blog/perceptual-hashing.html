@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How perceptual hashing spots a duplicate — Bulk Image Downloader</title>
+<meta name="description" content="A plain-English tour of dHash and Hamming distance — how a 64-bit fingerprint tells two near-identical photos apart from two different ones, and how Bulk Image Downloader uses it to group duplicates.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%2315803d'/%3E%3Cpath d='M12 4v9m0 0l-4-4m4 4l4-4M6 18h12' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="blog.css">
+</head>
+<body>
+
+<header class="nav"><div class="wrap nav__in">
+  <a class="brand" href="../index.html"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%2315803d'/%3E%3Cpath d='M12 4v9m0 0l-4-4m4 4l4-4M6 18h12' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" alt=""><span>Bulk Image Downloader</span></a>
+  <nav class="nav__links" aria-label="Primary">
+    <a href="../index.html#features">Features</a><a href="index.html" class="on">Blog</a><a href="../index.html#faq">FAQ</a><a href="../index.html#privacy">Privacy</a>
+  </nav>
+  <div class="nav__right"><a class="btn btn--primary btn--sm" href="../index.html">Add to Chrome</a></div>
+</div></header>
+
+<article class="article">
+  <a class="back" href="index.html">← All posts</a>
+  <header class="art-head">
+    <div class="cat">Under the hood</div>
+    <h1>How perceptual hashing spots a duplicate</h1>
+    <div class="art-meta">
+      <span class="who"><i></i> The TheOpenBox team</span>
+      <span class="dot"></span><span>Mar 14, 2026</span>
+      <span class="dot"></span><span>6 min read</span>
+    </div>
+  </header>
+
+  <div class="prose">
+    <p>Open a photo gallery, a product page, or a news article and the <em>same</em> image is often on the page several times: a 200-pixel thumbnail, an 800-pixel preview, a 2,000-pixel full-size, maybe a slightly re-compressed copy served by a CDN. To a human they're obviously the same picture. To a computer, they're four completely different files.</p>
+
+    <p>Bulk Image Downloader's "Duplicates" view groups those copies so you download one, not five. The trick that makes it possible is <strong>perceptual hashing</strong> — and it's simpler than it sounds.</p>
+
+    <h2>Why exact hashing doesn't work</h2>
+    <p>The usual way to check if two files are identical is a cryptographic hash like MD5 or SHA-256. Feed in the bytes, get out a fixed-length fingerprint. If two files have the same hash, they're the same file.</p>
+    <p>That's precisely the wrong tool here. Cryptographic hashes are designed so that changing a <em>single byte</em> produces a completely different result. Resize an image by one pixel, save it at 90% quality instead of 92%, or let a CDN re-encode it, and the exact hash changes entirely — even though the picture looks the same. Exact hashing answers "are these the same bytes?" We need to answer a different question:</p>
+    <blockquote><p>Do these two images <em>look</em> the same?</p></blockquote>
+
+    <h2>The idea: a fingerprint of what the image looks like</h2>
+    <p>A perceptual hash produces a fingerprint from the <em>content</em> of an image rather than its bytes. The goal is the opposite of a cryptographic hash: images that look similar should get <strong>similar fingerprints</strong>, and small changes should cause small differences.</p>
+    <p>Bulk Image Downloader uses a well-known and pleasantly cheap variant called <strong>dHash</strong> (difference hash). Here's the whole recipe.</p>
+
+    <figure>
+      <svg viewBox="0 0 720 220" role="img" aria-label="dHash pipeline: shrink the image to a tiny greyscale grid, compare each pixel to its right neighbour, and read off 64 bits.">
+        <rect width="720" height="220" fill="#ffffff"/>
+        <!-- stage 1: image -->
+        <rect x="24" y="66" width="96" height="72" rx="8" fill="#dff1e6" stroke="#15803d" stroke-width="1.5"/>
+        <circle cx="98" cy="88" r="9" fill="#f6c453"/>
+        <path d="M24 128 L58 100 L82 118 L120 92 L120 138 L24 138 Z" fill="#2f9e57"/>
+        <text x="72" y="158" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#5c675f">the image</text>
+        <!-- arrow -->
+        <path d="M132 102 H176" stroke="#8b958c" stroke-width="1.5" marker-end="url(#a)"/>
+        <text x="154" y="94" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="10" fill="#5c675f">shrink</text>
+        <!-- stage 2: 9x8 grid -->
+        <g>
+          <rect x="188" y="70" width="108" height="64" fill="#f6f8f6" stroke="#116233" stroke-width="1.5"/>
+          <rect x="200" y="82" width="12" height="12" fill="#c9d2c7"/><rect x="224" y="82" width="12" height="12" fill="#98a89b"/><rect x="272" y="94" width="12" height="12" fill="#6f8274"/><rect x="212" y="106" width="12" height="12" fill="#b7c2b8"/><rect x="248" y="106" width="12" height="12" fill="#88977f"/>
+          <path d="M200 70 V134 M212 70 V134 M224 70 V134 M236 70 V134 M248 70 V134 M260 70 V134 M272 70 V134 M284 70 V134" stroke="#e4e8e3" stroke-width="1"/>
+          <path d="M188 82 H296 M188 94 H296 M188 106 H296 M188 118 H296" stroke="#e4e8e3" stroke-width="1"/>
+        </g>
+        <text x="242" y="152" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#5c675f">9×8 greyscale</text>
+        <!-- arrow -->
+        <path d="M308 102 H352" stroke="#8b958c" stroke-width="1.5" marker-end="url(#a)"/>
+        <text x="330" y="94" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="10" fill="#5c675f">compare</text>
+        <!-- stage 3: bits -->
+        <rect x="364" y="62" width="332" height="80" rx="8" fill="#0f1a14"/>
+        <text x="380" y="92" font-family="ui-monospace,Consolas,monospace" font-size="14" fill="#e6f2ea" letter-spacing="3">10110100 11100101</text>
+        <text x="380" y="116" font-family="ui-monospace,Consolas,monospace" font-size="14" fill="#e6f2ea" letter-spacing="3">01101100 …&#160;&#160;&#160;(64 bits)</text>
+        <text x="530" y="160" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="11" fill="#5c675f">64-bit fingerprint</text>
+        <defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#8b958c"/></marker></defs>
+      </svg>
+      <figcaption>dHash in three steps: shrink to a tiny greyscale grid, ask "is each pixel brighter than the one to its right?", and read off the answers as 64 bits.</figcaption>
+    </figure>
+
+    <ol>
+      <li><strong>Shrink it.</strong> Scale the image down to a tiny <code>9×8</code> grid and convert to greyscale. All the fine detail — the exact pixels, the resolution, the file size — is thrown away. What survives is the rough <em>structure</em> of light and dark.</li>
+      <li><strong>Compare neighbours.</strong> For each row, walk left to right and ask a single yes/no question about each pixel: <em>is it brighter than the pixel immediately to its right?</em> Nine pixels per row gives eight comparisons, and eight rows gives <code>8 × 8 = 64</code> yes/no answers.</li>
+      <li><strong>Read off the bits.</strong> Write each "yes" as a <code>1</code> and each "no" as a <code>0</code>. That 64-bit number is the image's fingerprint.</li>
+    </ol>
+
+    <p>Because the fingerprint is built from <em>relative</em> brightness between neighbouring pixels, it barely moves when you resize the image, nudge the compression, or shift the overall brightness. The gradient from light to dark across a mountain ridge is the same whether the photo is 200 pixels wide or 2,000. That's exactly the robustness we want.</p>
+
+    <h2>Comparing two fingerprints</h2>
+    <p>Once every image has a 64-bit fingerprint, comparing them is trivial: line up two fingerprints and count how many bits differ. That count is the <strong>Hamming distance</strong>.</p>
+
+    <pre><code>A: 10110100 11100101 01101100 …
+B: 10110100 11<strong>0</strong>00101 01101100 …
+                ↑
+   differ in 1 place  →  Hamming distance = 1</code></pre>
+
+    <ul>
+      <li><strong>Distance 0</strong> — the two images have the identical structure. Almost always the same picture at different sizes.</li>
+      <li><strong>A small distance</strong> — a near-duplicate. A re-compression, a light edit, a watermark in the corner.</li>
+      <li><strong>A large distance</strong> — genuinely different images.</li>
+    </ul>
+
+    <p>Bulk Image Downloader groups any images whose fingerprints are within a distance you control. The <strong>Match sensitivity</strong> slider is exactly this threshold: at the strict end it only groups near-identical copies; loosen it and it starts pulling in more distant look-alikes. The default sits at a distance of about <code>6</code> out of 64 — tight enough to avoid false matches, loose enough to catch the everyday resize-and-recompress copies.</p>
+
+    <div class="key"><p>Everything above runs <strong>on your device</strong>, in the results page, using the same image bytes the extension already fetched. No image is ever sent anywhere to be compared.</p></div>
+
+    <h2>What it catches — and what it doesn't</h2>
+    <p>dHash is deliberately a blunt instrument, and that's a feature. It reliably catches the cases that actually clutter a download folder: the same photo at five sizes, a JPEG re-saved by a CDN, a logo with and without a small badge.</p>
+    <p>It intentionally does <em>not</em> treat a hard crop, a horizontal flip, or a heavy colour grade as the same image — because, for someone downloading pictures, those usually <em>are</em> different pictures. If you want more or fewer matches, that's what the sensitivity slider is for; you stay in control of the final call.</p>
+
+    <h2>Why this approach</h2>
+    <p>There are fancier perceptual hashes — pHash uses a discrete cosine transform, and neural embeddings can match across crops and rotations. But they're heavier, slower, and for a browser extension that has to fingerprint hundreds of images the moment you click, dHash hits a sweet spot: a few milliseconds per image, no libraries to ship, no data to upload, and results you can reason about. Sometimes the small, legible tool is the right one.</p>
+  </div>
+</article>
+
+<div class="endcta"><div class="endcta__in">
+  <div><h3>Try the Duplicates view yourself.</h3><p>Free during the beta · no account · runs on your device.</p></div>
+  <a class="btn btn--primary" href="../index.html">Add to Chrome</a>
+</div></div>
+
+<footer class="foot"><div class="wrap foot__in">
+  <p>© 2026 Bulk Image Downloader · by TheOpenBox</p>
+  <div class="foot__links"><a href="../index.html#features">Features</a><a href="index.html">Blog</a><a href="../index.html#faq">FAQ</a><a href="../index.html#privacy">Privacy</a></div>
+</div></footer>
+
+</body>
+</html>
