@@ -144,7 +144,7 @@ h1,h2,h3{line-height:1.15;letter-spacing:-.02em;font-weight:700;text-wrap:balanc
     <nav class="nav__links" aria-label="Primary">
       <a href="#try">Try it</a><a href="#features">Features</a><a href="blog/index.html">Blog</a><a href="#faq">FAQ</a><a href="#privacy">Privacy</a>
     </nav>
-    <div class="nav__right"><a class="btn btn--primary btn--sm" href="#" data-cta>Add to Chrome</a></div>
+    <div class="nav__right"><a class="btn btn--primary btn--sm" href="https://chromewebstore.google.com/detail/bulk-image-downloader-by/nekankjpjfcbejfjhgebddbfepecgjfb" target="_blank" rel="noopener">Add to Chrome</a></div>
   </div>
 </header>
 
@@ -154,7 +154,7 @@ h1,h2,h3{line-height:1.15;letter-spacing:-.02em;font-weight:700;text-wrap:balanc
   <h1>Save every image on a page. The right ones.</h1>
   <p>Bulk Image Downloader finds every image a page loads — even the lazy-loaded and CSS-background ones — then lets you filter, remove duplicates, and download your picks as files or a ZIP. It all runs on your device.</p>
   <div class="hero__cta">
-    <a class="btn btn--primary" href="#" data-cta>Add to Chrome — Free</a>
+    <a class="btn btn--primary" href="https://chromewebstore.google.com/detail/bulk-image-downloader-by/nekankjpjfcbejfjhgebddbfepecgjfb" target="_blank" rel="noopener">Add to Chrome — Free</a>
     <a class="btn btn--ghost" href="#try">See how it works</a>
   </div>
   <div class="hero__note">No account · no sign-up · works offline</div>
@@ -235,7 +235,7 @@ h1,h2,h3{line-height:1.15;letter-spacing:-.02em;font-weight:700;text-wrap:balanc
 <!-- CTA STRIP -->
 <section class="section" style="text-align:center"><div class="wrap">
   <div class="head head--c"><h2>Grab your first batch in a click.</h2><p>Free during the beta. No account required.</p></div>
-  <div style="margin-top:24px"><a class="btn btn--primary" href="#" data-cta>Add to Chrome — Free</a></div>
+  <div style="margin-top:24px"><a class="btn btn--primary" href="https://chromewebstore.google.com/detail/bulk-image-downloader-by/nekankjpjfcbejfjhgebddbfepecgjfb" target="_blank" rel="noopener">Add to Chrome — Free</a></div>
 </div></section>
 
 <!-- FOOTER -->
@@ -254,15 +254,5 @@ h1,h2,h3{line-height:1.15;letter-spacing:-.02em;font-weight:700;text-wrap:balanc
   <div class="foot__legal"><span>© 2026 Bulk Image Downloader</span><span>Made for people who grab a lot of images.</span></div>
 </div></footer>
 
-<div class="toast" id="toast"></div>
-
-<script>
-(function(){
-  "use strict";
-  var toast=document.getElementById("toast"),tt;
-  function say(m){toast.textContent=m;toast.classList.add("show");clearTimeout(tt);tt=setTimeout(function(){toast.classList.remove("show");},2200);}
-  document.querySelectorAll("[data-cta]").forEach(function(b){b.addEventListener("click",function(e){e.preventDefault();say("Coming soon to the Chrome Web Store");});});
-})();
-</script>
 </body>
 </html>
