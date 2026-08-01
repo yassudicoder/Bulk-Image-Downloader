@@ -541,8 +541,9 @@ input[type=range]{width:100%;accent-color:var(--green-deep);cursor:ew-resize}
 
 /* real screenshots strip */
 .proof{margin-top:110px}
-.shots{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-top:48px}
-@media(max-width:900px){.shots{grid-template-columns:1fr}}
+/* stacked near-native frames — a 2x capture shown at its intended size
+   stays sharp; two squeezed columns do not */
+.shots{display:grid;grid-template-columns:1fr;gap:44px;margin-top:48px;max-width:1104px}
 .shot{border:1px solid var(--p-line2);background:var(--p-panel);
   box-shadow:0 30px 70px -45px rgba(22,26,21,.5)}
 .shot .bar{display:flex;gap:6px;align-items:center;height:34px;padding:0 13px;
