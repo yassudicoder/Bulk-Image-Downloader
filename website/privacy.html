@@ -7,46 +7,66 @@
 <meta name="description" content="Bulk Image Downloader does not collect, transmit, sell, or share any of your data. Everything it does happens on your device.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%2315803d'/%3E%3Cpath d='M12 4v9m0 0l-4-4m4 4l4-4M6 18h12' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
+@font-face{font-family:'Anton';font-style:normal;font-weight:400;font-display:swap;
+  src:url(fonts/anton-400.woff2) format('woff2')}
+@font-face{font-family:'Archivo';font-style:normal;font-weight:400 700;font-display:swap;
+  src:url(fonts/archivo-var.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;
+  src:url(fonts/ibm-plex-mono-400.woff2) format('woff2')}
 :root{
-  --bg:#ffffff; --bg-alt:#f6f8f6; --ink:#16201a; --muted:#5c675f; --faint:#8b958c;
-  --line:#e4e8e3; --line-2:#d3dad2; --green:#15803d; --green-ink:#116233; --green-soft:#e9f4ec;
-  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --bg:#f2f0e8; --bg-alt:#eae7dc; --panel:#faf9f4;
+  --ink:#161a15; --muted:#5b635a; --faint:#8b917f;
+  --line:#d9d5c6; --line-2:#c2beae;
+  --green:#1c9d4f; --green-ink:#136b38; --green-soft:#e4efe2;
+  --sans:"Archivo",-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --disp:"Anton",Impact,"Arial Narrow Bold",sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:var(--sans);color:var(--ink);background:var(--bg);line-height:1.68;-webkit-font-smoothing:antialiased}
-a{color:var(--green);text-decoration:none;font-weight:600}
+a{color:var(--green-ink);text-decoration:none;font-weight:600}
 a:hover{text-decoration:underline}
-.wrap{max-width:760px;margin:0 auto;padding:0 24px}
-.nav{border-bottom:1px solid var(--line);background:#fff}
-.nav__in{display:flex;align-items:center;gap:24px;height:60px;max-width:1080px;margin:0 auto;padding:0 24px}
-.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15.5px;letter-spacing:-.01em;color:var(--ink)}
-.brand img{width:26px;height:26px;border-radius:6px}
-.nav__links{display:flex;gap:26px;margin-left:12px}
-.nav__links a{font-size:14.5px;color:var(--muted);font-weight:500}
-.nav__links a:hover{color:var(--ink);text-decoration:none}
+::selection{background:var(--green);color:#fff}
+:focus-visible{outline:2px solid var(--green-ink);outline-offset:3px;border-radius:2px}
+.wrap{max-width:760px;margin:0 auto;padding:0 28px}
+.nav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--line);
+  background:color-mix(in srgb,var(--bg) 92%,transparent);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.nav__in{display:flex;align-items:center;gap:24px;height:62px;max-width:1180px;margin:0 auto;padding:0 28px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;letter-spacing:-.01em;color:var(--ink)}
+.brand img{width:26px;height:26px}
+.nav__links{display:flex;gap:4px;margin-left:12px}
+.nav__links a{font-size:14px;color:var(--muted);font-weight:500;padding:8px 12px}
+.nav__links a:hover{color:var(--ink);text-decoration:none;background:rgba(0,0,0,.05)}
 .nav__right{margin-left:auto}
-.btn{display:inline-flex;align-items:center;font-weight:600;font-size:14px;padding:8px 15px;border-radius:8px;background:var(--green);color:#fff}
+.btn{display:inline-flex;align-items:center;font-weight:600;font-size:14px;padding:9px 15px;
+  border-radius:4px;background:var(--green);color:#fff}
 .btn:hover{background:var(--green-ink);text-decoration:none}
 @media(max-width:700px){.nav__links{display:none}}
 
-.head{padding:52px 0 8px}
-.head h1{font-size:clamp(30px,5vw,42px);letter-spacing:-.02em;line-height:1.15}
-.head .upd{color:var(--faint);font-size:14px;margin-top:12px}
-.tldr{margin:26px 0 8px;border:1px solid var(--line-2);border-radius:12px;background:var(--green-soft);padding:18px 22px;font-size:16px}
+.head{padding:56px 0 8px}
+.head h1{font-family:var(--disp);font-weight:400;text-transform:uppercase;letter-spacing:.005em;
+  font-size:clamp(34px,5.4vw,54px);line-height:1}
+.head .upd{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--faint);margin-top:14px}
+.tldr{margin:26px 0 8px;border:1px solid #c4dcc4;background:var(--green-soft);padding:18px 22px;font-size:16px}
 .tldr strong{color:var(--green-ink)}
 
 .doc{padding:8px 0 20px;font-size:16.5px;color:#26312a}
-.doc h2{font-size:22px;letter-spacing:-.01em;color:var(--ink);margin:38px 0 10px}
+.doc h2{font-family:var(--disp);font-weight:400;text-transform:uppercase;letter-spacing:.01em;
+  font-size:22px;color:var(--ink);margin:40px 0 10px}
 .doc p{margin-top:12px;line-height:1.75}
 .doc ul{margin:12px 0 0;padding-left:22px}
 .doc li{margin-top:9px;line-height:1.7}
-.doc li::marker{color:var(--green)}
+.doc li::marker{color:var(--green-ink)}
 .doc strong{color:var(--ink)}
-.doc code{font-family:ui-monospace,Consolas,monospace;font-size:14.5px;background:var(--bg-alt);border:1px solid var(--line);padding:1px 6px;border-radius:5px;color:var(--green-ink)}
+.doc code{font-family:var(--mono);font-size:14px;background:var(--bg-alt);border:1px solid var(--line);padding:1px 6px;color:var(--green-ink)}
 hr{border:none;border-top:1px solid var(--line);margin:40px 0}
 
-.foot{border-top:1px solid var(--line);padding:36px 0 44px;color:var(--faint);font-size:13px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.foot{border-top:1px solid var(--line);padding:36px 0 44px;margin-top:40px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--faint);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .foot a{color:var(--muted);font-weight:500}
 </style>
 </head>
@@ -55,7 +75,7 @@ hr{border:none;border-top:1px solid var(--line);margin:40px 0}
 <header class="nav"><div class="nav__in">
   <a class="brand" href="index.html"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%2315803d'/%3E%3Cpath d='M12 4v9m0 0l-4-4m4 4l4-4M6 18h12' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" alt=""><span>Bulk Image Downloader</span></a>
   <nav class="nav__links" aria-label="Primary">
-    <a href="index.html#features">Features</a><a href="blog/index.html">Blog</a><a href="index.html#faq">FAQ</a><a href="privacy.html">Privacy</a>
+    <a href="index.html#scan">Features</a><a href="blog/index.html">Blog</a><a href="index.html#faq">FAQ</a><a href="privacy.html">Privacy</a>
   </nav>
   <div class="nav__right"><a class="btn" href="https://chromewebstore.google.com/detail/bulk-image-downloader-by/nekankjpjfcbejfjhgebddbfepecgjfb" target="_blank" rel="noopener">Add to Chrome</a></div>
 </div></header>

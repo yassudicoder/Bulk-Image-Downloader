@@ -80,9 +80,9 @@
   <div class="pin">
     <div class="wrap">
       <div class="sec-head">
-        <p class="kick"><span class="n">STAGE 01</span> Deep page scan</p>
-        <h2>Images hide in five places.<br>It checks all of them.</h2>
-        <p>One click on the toolbar icon and the scanner walks the page — up to 25,000 elements — pulling images out of layers most downloaders never open. Keep scrolling to peel the page apart.</p>
+        <p class="kick"><span class="n">STAGE 01</span> Deep page scan <span class="io">IN 1 PAGE → OUT 247</span></p>
+        <h2>The page has more images<br>than it shows.</h2>
+        <p>One click on the toolbar icon and the scanner walks the page — up to 25,000 elements — pulling images out of layers most downloaders never open. Keep scrolling to peel the page apart, then watch it flatten back into a working set.</p>
       </div>
       <div class="layers-flat" aria-hidden="false">
         <div class="row"><span class="m">01 · &lt;img&gt; tags</span><p>the obvious ones</p></div>
@@ -112,15 +112,19 @@
   </div>
 </section>
 
+<div class="gate gate--dark" aria-hidden="true">
+  <span class="g-lab">SCAN COMPLETE</span>
+  <span class="g-io"><b data-count="247">0</b> assets forwarded to filter</span>
+</div>
 <div class="seam" aria-hidden="true"></div>
 
 <!-- ══════════ STAGE 02 — FILTER (working demo) ══════════ -->
 <section class="sec light" id="try" data-status="STAGE 02 — FILTERING">
   <div class="wrap">
     <div class="sec-head rv">
-      <p class="kick"><span class="n">STAGE 02</span> Precise filters · live demo</p>
-      <h2>247 is too many.<br>Narrow it like you mean it.</h2>
-      <p>Size, file type, source domain, filename — or flip “only from this page” and third-party clutter disappears. This is a working miniature of the real filter engine. Go ahead, move things.</p>
+      <p class="kick"><span class="n">STAGE 02</span> Precise filters · live demo <span class="io">IN 247 → OUT 86</span></p>
+      <h2>247 found.<br>You only need 86.</h2>
+      <p>Size, file type, source domain, filename — or flip “only from this page” and third-party clutter disappears. This is a working miniature of the real filter engine, running on the same assets the scanner just found. Go ahead, move things.</p>
     </div>
     <div class="playground rv rv2">
       <div class="play-top">
@@ -164,61 +168,64 @@
   </div>
 </section>
 
+<div class="gate gate--light" aria-hidden="true">
+  <span class="g-lab">FILTER PASS</span>
+  <span class="g-io"><b data-count="247">0</b> in · <b data-count="86">0</b> kept · <b data-count="161">0</b> discarded</span>
+</div>
+
 <!-- ══════════ STAGE 03 — DEDUPE ══════════ -->
 <section class="sec light" id="dedupe" data-status="STAGE 03 — DEDUPING">
   <div class="wrap">
     <div class="sec-head rv">
-      <p class="kick"><span class="n">STAGE 03</span> Perceptual de-duplication</p>
-      <h2>Five copies walk in.<br>One walks out.</h2>
-      <p>Every image gets a 64-bit perceptual fingerprint. Near-identical copies — resizes, re-compressions, small edits — land within a few bits of each other, so the extension groups them and keeps the best. Usually the largest. Sensitivity is adjustable.</p>
+      <p class="kick"><span class="n">STAGE 03</span> Perceptual de-duplication <span class="io">IN 86 → OUT 73</span></p>
+      <h2>Five files.<br>One image.</h2>
+      <p>Every image gets a 64-bit perceptual fingerprint. Near-identical copies — resizes, re-compressions, small edits — land within a few bits of each other. Watch the comparator work the group below: bit by bit, distance by distance.</p>
     </div>
     <div class="dd-wrap">
       <div class="dd-stage rv" id="ddStage">
-        <span class="m corner">GROUP 01 — 5 candidates</span>
-        <span class="dd-result">5 variants → 1 kept · 1600×1067</span>
-        <button class="mbtn dd-run" id="ddRun">RUN DEDUPE</button>
+        <span class="m corner">GROUP 01 — 6 candidates</span>
+        <span class="m ddstatus" id="ddStatus" aria-live="polite">idle — waiting for group</span>
+        <button class="mbtn dd-run" id="ddRun">RUN AGAIN</button>
       </div>
       <div class="rv rv2">
-        <div class="hashcard">
-          <h3>dHash · Hamming distance ≤ 6</h3>
+        <div class="hashcard live">
+          <h3>Comparator — dHash 64-bit · match ≤ 6</h3>
           <div class="hashpair">
-            <div class="bits" id="hashA1" aria-hidden="true"></div>
-            <span class="vs">vs</span>
-            <div class="bits" id="hashA2" aria-hidden="true"></div>
+            <div class="hcol"><span class="hlbl">A · keep candidate</span><div class="bits" id="cmpA" aria-hidden="true"></div></div>
+            <div class="vscol"><span class="vs">vs</span><div class="dist"><span id="ddDist">--</span><span class="dlbl">hamming</span></div></div>
+            <div class="hcol"><span class="hlbl" id="cmpBlbl">B · —</span><div class="bits" id="cmpB" aria-hidden="true"></div></div>
           </div>
-          <p class="hash-verdict">distance: 3 → <b>DUPLICATE</b></p>
-          <p class="note">Two fingerprints of the same photo at different sizes: 3 of 64 bits differ. Grouped.</p>
-        </div>
-        <div class="hashcard">
-          <div class="hashpair">
-            <div class="bits" id="hashB1" aria-hidden="true"></div>
-            <span class="vs">vs</span>
-            <div class="bits" id="hashB2" aria-hidden="true"></div>
-          </div>
-          <p class="hash-verdict no">distance: 31 → <b>DIFFERENT</b></p>
-          <p class="note">Two genuinely different photos: fingerprints disagree everywhere. Kept apart. Exact copies are also caught byte-for-byte with SHA-256.</p>
+          <p class="hash-verdict" id="ddVerdict">idle — waiting for group</p>
+          <div class="cmp-log" id="cmpLog" aria-hidden="true"></div>
+          <p class="note">Red bits are where the fingerprints disagree. Four resizes land within 6 bits of the original and collapse into it; the linen texture lands 31 bits away and stays its own image. Exact copies are also caught byte-for-byte with SHA-256.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
+<div class="gate gate--light" aria-hidden="true">
+  <span class="g-lab">DEDUPE PASS</span>
+  <span class="g-io"><b data-count="86">0</b> in · <b data-count="73">0</b> unique · <b data-count="13">0</b> collapsed</span>
+</div>
+
 <!-- ══════════ STAGE 04 — DOWNLOAD / ZIP ══════════ -->
 <section class="sec light" id="zip" data-status="STAGE 04 — PACKAGING">
   <div class="wrap">
     <div class="sec-head rv">
-      <p class="kick"><span class="n">STAGE 04</span> Download · single files or ZIP</p>
+      <p class="kick"><span class="n">STAGE 04</span> Download · single files or ZIP <span class="io">IN 73 → OUT 1 ZIP</span></p>
       <h2>Your picks, boxed<br>and handed over.</h2>
-      <p>Download images one by one, or bundle the whole selection into a single archive — assembled by our own dependency-free ZIP writer, right in the tab. No server ever touches your files.</p>
+      <p>The survivors of the pipeline arrive here. Download them one by one, or bundle the whole selection into a single archive — assembled by our own dependency-free ZIP writer, right in the tab. No server ever touches your files.</p>
     </div>
     <div class="zip-wrap">
       <div class="zip-field rv" id="zipField" aria-hidden="true"></div>
       <div class="rv rv2">
+        <div class="funnel m" aria-hidden="true"><span>247 found</span><i>→</i><span>86 selected</span><i>→</i><span>73 unique</span><i>→</i><b>73 packaged</b></div>
         <div class="zipbox" id="zipbox">
-          <div class="zb-top"><span class="m">ARCHIVE</span><span class="m zn">images_example.com.zip</span></div>
+          <div class="zb-top"><span class="m">ARCHIVE</span><span class="m zn">images_example_com.zip</span></div>
           <div class="manifest" id="manifest" aria-hidden="true"></div>
           <div class="zb-bar" id="zipProg" aria-hidden="true"><i></i></div>
-          <div class="zb-foot"><span id="zipFoot">waiting for selection…</span><button class="mbtn" id="zipReplay" style="border-color:#3a453a;background:transparent;color:#c7cec5">REPLAY</button></div>
+          <div class="zb-foot"><span id="zipFoot">waiting for the pipeline…</span><button class="mbtn" id="zipReplay" style="border-color:#3a453a;background:transparent;color:#c7cec5">REPLAY</button></div>
         </div>
         <div class="rules">
           <span class="protag">PRO</span>
@@ -258,14 +265,14 @@
 <section class="sec dark priv" id="privacy" data-status="NETWORK — 0 BYTES OUT">
   <div class="wrap">
     <div class="sec-head rv">
-      <p class="kick"><span class="n">05 · LOCAL</span> Privacy architecture</p>
-      <h2>Your images never<br>leave your device.</h2>
-      <p>There’s no account to create and no server to phone home to. The extension can’t even see a page until you click its icon on that tab — zero host permissions at install. It does its work locally and forgets everything when the tab closes.</p>
+      <p class="kick"><span class="n">05 · LOCAL</span> Privacy architecture <span class="io">OUT 0 BYTES</span></p>
+      <h2>Nothing left<br>your device.</h2>
+      <p>Everything you just watched — the scan, the filters, the fingerprints, the archive — happened inside one browser tab. There’s no account to create and no server to phone home to. The extension can’t even see a page until you click its icon on that tab — zero host permissions at install.</p>
     </div>
 
     <div class="privviz rv" aria-hidden="true">
       <div class="device">
-        <span class="m hd"><i class="dot"></i>YOUR DEVICE — everything happens here</span>
+        <span class="m hd"><i class="dot"></i>YOUR DEVICE — the entire pipeline happened here</span>
         <div class="pipe">
           <span class="node">SCAN<small>on click only</small></span><span class="link"><i style="--ad:0s"></i></span>
           <span class="node">FILTER<small>in the tab</small></span><span class="link"><i style="--ad:.6s"></i></span>
@@ -273,15 +280,24 @@
           <span class="node">ZIP<small>in-browser</small></span><span class="link"><i style="--ad:1.8s"></i></span>
           <span class="node" style="border-color:var(--green);color:var(--green-hi)">DISK<small>your downloads</small></span>
         </div>
+        <div class="ledger" id="ledger">
+          <span class="m llbl">session ledger</span>
+          <div class="lrow"><span>discovered</span><b data-count="247">0</b></div>
+          <div class="lrow"><span>selected</span><b data-count="86">0</b></div>
+          <div class="lrow"><span>unique</span><b data-count="73">0</b></div>
+          <div class="lrow"><span>packaged</span><b data-count="73">0</b></div>
+          <div class="lrow up"><span>uploaded</span><b>0</b></div>
+          <span class="zipchip" id="zipchip">▸ images_example_com.zip → Downloads/</span>
+        </div>
         <p class="foot-note"><b>Permissions, in full:</b> the active tab when you click, downloads, and storage for your settings. One optional grant exists — asked at runtime, with your OK — only to fetch images from servers that block cross-origin requests.</p>
       </div>
       <div class="outside">
-        <span class="m hd">THE INTERNET — sees nothing</span>
+        <span class="m hd">THE INTERNET — saw none of it</span>
         <div class="monitor">
-          <div class="row"><span>uploads</span><b>0</b></div>
+          <div class="row"><span>image processing requests</span><b>0</b></div>
+          <div class="row"><span>uploads</span><b>0 B</b></div>
           <div class="row"><span>accounts required</span><b>0</b></div>
           <div class="row"><span>tracking requests</span><b>0</b></div>
-          <div class="row"><span>outbound image data</span><b>0 bytes</b></div>
         </div>
         <div class="flat"><span class="m">outbound traffic</span></div>
       </div>
@@ -372,8 +388,10 @@
 <section class="final dark" data-status="READY — ADD TO CHROME">
   <div class="wrap">
     <div class="rv">
-      <p class="kick" style="justify-content:center"><span class="n">END OF PIPELINE</span> One click from here</p>
-      <h2>Grab your first<br><em>batch.</em></h2>
+      <div class="endfunnel" id="endFunnel" aria-hidden="true">
+        <span>247 found</span><span class="ar">→</span><span>86 selected</span><span class="ar">→</span><span>73 unique</span><span class="ar">→</span><span class="zp">ZIP</span><em>COMPLETE.</em>
+      </div>
+      <h2>Run it on<br><em>your</em> page.</h2>
       <p>Free during the beta. No account required.</p>
       <div class="hero-cta">
         <a class="btn btn--go" href="https://chromewebstore.google.com/detail/bulk-image-downloader-by/nekankjpjfcbejfjhgebddbfepecgjfb" target="_blank" rel="noopener">Add to Chrome — Free</a>
@@ -383,8 +401,8 @@
   </div>
   <div class="ticker" aria-hidden="true">
     <div class="tk">
-      <span class="m">JPG</span><span class="m">PNG</span><span class="m">WEBP</span><span class="m">GIF</span><span class="m">SVG</span><span class="m">AVIF</span><span class="m"><b>SCAN → FILTER → DEDUPE → ZIP</b></span><span class="m">247 FOUND</span><span class="m">0 UPLOADED</span><span class="m">dHASH 64-BIT</span><span class="m">HAMMING ≤ 6</span><span class="m">ON-DEVICE</span>
-      <span class="m">JPG</span><span class="m">PNG</span><span class="m">WEBP</span><span class="m">GIF</span><span class="m">SVG</span><span class="m">AVIF</span><span class="m"><b>SCAN → FILTER → DEDUPE → ZIP</b></span><span class="m">247 FOUND</span><span class="m">0 UPLOADED</span><span class="m">dHASH 64-BIT</span><span class="m">HAMMING ≤ 6</span><span class="m">ON-DEVICE</span>
+      <span class="m">JPG</span><span class="m">PNG</span><span class="m">WEBP</span><span class="m">GIF</span><span class="m">SVG</span><span class="m">AVIF</span><span class="m"><b>SCAN → FILTER → DEDUPE → ZIP</b></span><span class="m">247 FOUND</span><span class="m">86 SELECTED</span><span class="m">73 UNIQUE</span><span class="m">0 UPLOADED</span><span class="m">dHASH 64-BIT</span><span class="m">HAMMING ≤ 6</span><span class="m">ON-DEVICE</span>
+      <span class="m">JPG</span><span class="m">PNG</span><span class="m">WEBP</span><span class="m">GIF</span><span class="m">SVG</span><span class="m">AVIF</span><span class="m"><b>SCAN → FILTER → DEDUPE → ZIP</b></span><span class="m">247 FOUND</span><span class="m">86 SELECTED</span><span class="m">73 UNIQUE</span><span class="m">0 UPLOADED</span><span class="m">dHASH 64-BIT</span><span class="m">HAMMING ≤ 6</span><span class="m">ON-DEVICE</span>
     </div>
   </div>
 </section>
